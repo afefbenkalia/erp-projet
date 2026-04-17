@@ -1,4 +1,4 @@
-// components/Sidebar.jsx - Sidebar moderne
+// components/Sidebar.jsx
 import { useContext, useState } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { Link, useLocation } from "react-router-dom";
@@ -8,16 +8,15 @@ export default function Sidebar() {
   const location = useLocation();
   const [hoveredItem, setHoveredItem] = useState(null);
 
-  const isAdmin = role === "admin";
-
   const menuItems = [
     { path: "/dashboard", label: "Dashboard", icon: "📊", roles: ["admin", "stock", "production"] },
     { path: "/stock", label: "Gestion des Stocks", icon: "📦", roles: ["admin", "stock"] },
     { path: "/production", label: "Production", icon: "🏭", roles: ["admin", "production"] },
     { path: "/hr", label: "Ressources Humaines", icon: "👥", roles: ["admin"] },
+    { path: "/ordersfabricationerp", label: "Ordres Fabrication ERP", icon: "📝", roles: ["admin", "production"] },
   ];
 
-  const filteredItems = menuItems.filter(item => item.roles.includes(role));
+  const filteredItems = menuItems.filter((item) => item.roles.includes(role));
 
   const styles = {
     sidebar: {

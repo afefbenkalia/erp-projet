@@ -15,7 +15,8 @@ export default function Login() {
         password,
       });
 
-      login(res.data.access_token, res.data.role);
+     // Changement ici : access_token → token
+login(res.data.token, res.data.role);  // au lieu de res.data.access_token
       window.location.href = "/dashboard";
     } catch {
       alert("Login failed ❌");

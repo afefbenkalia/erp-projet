@@ -5,6 +5,7 @@ import Dashboard from "../pages/Dashboard";
 import Stock from "../pages/Stock";
 import Production from "../pages/Production";
 import HR from "../pages/HR";
+import OrdresFabricationERP from "../pages/OrdresFabricationERP";
 
 import MainLayout from "../layouts/MainLayout";
 import ProtectedRoute from "./ProtectedRoute";
@@ -14,10 +15,8 @@ export default function AppRoutes() {
     <BrowserRouter>
       <Routes>
 
-        {/* LOGIN */}
         <Route path="/" element={<Login />} />
 
-        {/* ERP PAGES */}
         <Route
           path="/dashboard"
           element={
@@ -57,6 +56,17 @@ export default function AppRoutes() {
             <ProtectedRoute>
               <MainLayout>
                 <HR />
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/ordersfabricationerp"
+          element={
+            <ProtectedRoute>
+              <MainLayout>
+                <OrdresFabricationERP />
               </MainLayout>
             </ProtectedRoute>
           }
