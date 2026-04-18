@@ -14,6 +14,7 @@ export default function Sidebar() {
     { path: "/production", label: "Production", icon: "🏭", roles: ["admin", "production"] },
     { path: "/hr", label: "Ressources Humaines", icon: "👥", roles: ["admin"] },
     { path: "/ordersfabricationerp", label: "Ordres Fabrication ERP", icon: "📝", roles: ["admin", "production"] },
+    { path: "/commande", label: "Commande", icon: "🛒", roles: ["admin", "commande"] },
   ];
 
   const filteredItems = menuItems.filter((item) => item.roles.includes(role));

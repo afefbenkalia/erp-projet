@@ -6,6 +6,7 @@ import Stock from "../pages/Stock";
 import Production from "../pages/Production";
 import HR from "../pages/HR";
 import OrdresFabricationERP from "../pages/OrdresFabricationERP";
+import Commande from "../pages/Commande";
 
 import MainLayout from "../layouts/MainLayout";
 import ProtectedRoute from "./ProtectedRoute";
@@ -71,6 +72,17 @@ export default function AppRoutes() {
             </ProtectedRoute>
           }
         />
+
+         <Route
+  path="/commande"
+  element={
+    <ProtectedRoute>
+      <MainLayout>
+        <Commande />
+      </MainLayout>
+    </ProtectedRoute>
+  }
+/>
 
       </Routes>
     </BrowserRouter>
