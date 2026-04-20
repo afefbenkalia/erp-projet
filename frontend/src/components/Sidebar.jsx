@@ -11,10 +11,9 @@ export default function Sidebar() {
   const menuItems = [
     { path: "/dashboard", label: "Dashboard", icon: "📊", roles: ["admin", "stock", "production"] },
     { path: "/stock", label: "Gestion des Stocks", icon: "📦", roles: ["admin", "stock"] },
-    { path: "/production", label: "Production", icon: "🏭", roles: ["admin", "production"] },
-    { path: "/hr", label: "Ressources Humaines", icon: "👥", roles: ["admin"] },
-    { path: "/ordersfabricationerp", label: "Ordres Fabrication ERP", icon: "📝", roles: ["admin", "production"] },
-    { path: "/commande", label: "Commande", icon: "🛒", roles: ["admin", "commande"] },
+   
+    { path: "/ordersfabricationerp", label: "Gestion de Production", icon: "📝", roles: ["admin", "production"] },
+
   ];
 
   const filteredItems = menuItems.filter((item) => item.roles.includes(role));
