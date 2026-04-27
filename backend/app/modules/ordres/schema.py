@@ -1,3 +1,4 @@
+# erp/schema.py
 from pydantic import BaseModel, field_validator
 from typing import Optional
 from datetime import date
@@ -5,7 +6,7 @@ from datetime import date
 
 class OFErpCreate(BaseModel):
     numero: str
-    machine: str
+    # ✅ SUPPRIMÉ: machine
     produit: str
     quantite: int
     date_debut: Optional[date] = None
@@ -29,7 +30,7 @@ class OFErpCreate(BaseModel):
 class OFErpOut(BaseModel):
     id: int
     numero: str
-    machine: str
+    # ✅ SUPPRIMÉ: machine
     produit: str
     quantite: int
     date_debut: Optional[date]

@@ -1,3 +1,4 @@
+# erp/model.py
 from sqlalchemy import Column, Integer, String, Date, DateTime
 from sqlalchemy.sql import func
 from app.core.database import Base
@@ -9,9 +10,12 @@ class OFErp(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     numero = Column(String, unique=True, nullable=False, index=True)
-    machine = Column(String, nullable=False)
-    produit = Column(String, nullable=False)
-    quantite = Column(Integer, nullable=False)
+    
+    # ✅ SUPPRIMÉ: machine (la machine est saisie au niveau de chaque production)
+    # La ligne de production est identifiée par le PRODUIT, pas par une machine unique
+    
+    produit = Column(String, nullable=False)   # "Ruban 100% coton", "Ruban Lin"...
+    quantite = Column(Integer, nullable=False)  # quantité cible en kg
     date_debut = Column(Date, nullable=True)
     date_fin = Column(Date, nullable=True)
 

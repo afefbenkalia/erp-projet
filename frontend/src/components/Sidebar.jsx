@@ -10,9 +10,9 @@ export default function Sidebar() {
 
   const menuItems = [
     { path: "/dashboard", label: "Dashboard", icon: "📊", roles: ["admin", "stock", "production"] },
-    { path: "/stock", label: "Gestion des Stocks", icon: "📦", roles: ["admin", "stock"] },
-   
+    { path: "/GestionStock", label: "Gestion des Stocks", icon: "📦", roles: ["admin", "stock"] },
     { path: "/ordersfabricationerp", label: "Gestion de Production", icon: "📝", roles: ["admin", "production"] },
+    { path: "/Approvisionnement", label: "Approvisionnement", icon: "🚚", roles: ["admin", "supply"] },
 
   ];
 

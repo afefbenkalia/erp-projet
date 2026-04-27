@@ -81,7 +81,7 @@ const OrdresFabricationERP = () => {
 
   const [form, setForm] = useState({
     numero: "",
-    machine: "",
+    // ✅ SUPPRIMÉ: machine: "",
     produit: "",
     quantite: "",
     date_debut: "",
@@ -120,7 +120,7 @@ const OrdresFabricationERP = () => {
   };
 
   const handleSubmit = async () => {
-    if (!form.machine || !form.produit || !form.quantite) {
+    if (!form.produit || !form.quantite) {
       showToast("Veuillez remplir tous les champs obligatoires", "error");
       return;
     }
@@ -139,11 +139,13 @@ const OrdresFabricationERP = () => {
 
     try {
       const payload = {
-        ...form,
-        quantite: parseInt(form.quantite),
-        date_debut: form.date_debut || null,
-        date_fin: form.date_fin || null,
-      };
+       numero: form.numero,
+      // ✅ SUPPRIMÉ: machine
+      produit: form.produit,
+      quantite: parseInt(form.quantite),
+      date_debut: form.date_debut || null,
+      date_fin: form.date_fin || null,
+    };
 
       if (editOf) {
         await axios.put(`${ERP_URL}/${editOf.id}`, payload);
@@ -207,7 +209,7 @@ const OrdresFabricationERP = () => {
     setEditOf(of);
     setForm({
       numero: of.numero,
-      machine: of.machine,
+      
       produit: of.produit,
       quantite: String(of.quantite),
       date_debut: of.date_debut || "",
@@ -321,17 +323,7 @@ const OrdresFabricationERP = () => {
               )}
             </div>
 
-            <div style={s.formGroup}>
-              <label style={s.label}>Machine *</label>
-              <select
-                style={s.select}
-                value={form.machine}
-                onChange={(e) => setForm({ ...form, machine: e.target.value })}
-              >
-                <option value="">Sélectionner...</option>
-                {MACHINES.map((m) => <option key={m} value={m}>{m}</option>)}
-              </select>
-            </div>
+          
 
             <div style={s.formGroup}>
               <label style={s.label}>Produit *</label>
@@ -421,7 +413,7 @@ const OrdresFabricationERP = () => {
             <table style={s.table}>
               <thead>
                 <tr>
-                  {["N° OF", "Machine", "Produit", "Qté (kg)", "Début", "Fin", "Statut ERP", "Actions"].map((h) => (
+                  {["N° OF", "Produit", "Qté (kg)", "Début", "Fin", "Statut ERP", "Actions"].map((h) => (
                     <th key={h} style={s.th}>{h}</th>
                   ))}
                 </tr>
@@ -432,7 +424,7 @@ const OrdresFabricationERP = () => {
                   return (
                     <tr key={of.id} style={{ background: i % 2 === 0 ? "#fff" : "#f8fafc" }}>
                       <td style={s.td}><span style={s.ofTag}>{of.numero}</span></td>
-                      <td style={s.td}>{of.machine}</td>
+                      
                       <td style={s.td}>{of.produit}</td>
                       <td style={s.td}><strong>{of.quantite}</strong></td>
                       <td style={s.td}>{of.date_debut || "—"}</td>

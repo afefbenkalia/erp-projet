@@ -2,10 +2,12 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import Login from "../pages/Login";
 import Dashboard from "../pages/Dashboard";
-import Stock from "../pages/Stock";
+
 
 
 import OrdresFabricationERP from "../pages/OrdresFabricationERP";
+import GestionStock from "../pages/GestionStock";
+import Approvisionnement from "../pages/Approvisionnement";
 
 
 import MainLayout from "../layouts/MainLayout";
@@ -30,11 +32,11 @@ export default function AppRoutes() {
         />
 
         <Route
-          path="/stock"
+          path="/GestionStock"
           element={
             <ProtectedRoute>
               <MainLayout>
-                <Stock />
+                <GestionStock />
               </MainLayout>
             </ProtectedRoute>
           }
@@ -50,6 +52,17 @@ export default function AppRoutes() {
             <ProtectedRoute>
               <MainLayout>
                 <OrdresFabricationERP />
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+
+         <Route
+          path="/Approvisionnement"
+          element={
+            <ProtectedRoute>
+              <MainLayout>
+                <Approvisionnement />
               </MainLayout>
             </ProtectedRoute>
           }
