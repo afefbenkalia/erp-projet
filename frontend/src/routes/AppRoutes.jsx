@@ -9,7 +9,7 @@ import OrdresFabricationERP from "../pages/OrdresFabricationERP";
 import GestionStock from "../pages/GestionStock";
 import Approvisionnement from "../pages/Approvisionnement";
 
-
+import ReportsArchive from "../pages/ReportsArchive";
 import MainLayout from "../layouts/MainLayout";
 import ProtectedRoute from "./ProtectedRoute";
 
@@ -68,7 +68,16 @@ export default function AppRoutes() {
           }
         />
 
-
+<Route
+  path="/ReportsArchive"
+  element={
+    <ProtectedRoute>
+      <MainLayout>
+        <ReportsArchive />
+      </MainLayout>
+    </ProtectedRoute>
+  }
+/>
 
       </Routes>
     </BrowserRouter>

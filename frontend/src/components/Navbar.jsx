@@ -134,7 +134,7 @@ export default function Navbar() {
   return (
     <div style={styles.navbar}>
       <div style={styles.title}>
-        Dashboard ERP
+        Systeme ERP
         <span style={styles.breadcrumb}>/ Vue d'ensemble</span>
       </div>
 

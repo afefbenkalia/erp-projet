@@ -5,6 +5,7 @@ from app.modules.auth.router import router as auth_router
 from app.modules.ordres.router import router as of_router
 from app.modules.stock.router import router as stock_router
 from app.modules.appro.router import router as appro_router
+from app.modules.reports_archive.router import router as report_router
 
 from app.core.database import Base, engine
 from app.modules.ordres.model import OFErp  # important
@@ -31,3 +32,4 @@ app.include_router(auth_router)
 app.include_router(of_router, prefix="/api")
 app.include_router(stock_router, prefix="/api")
 app.include_router(appro_router, prefix="/api")
+app.include_router(report_router, prefix="/api")
