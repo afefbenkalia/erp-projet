@@ -10,7 +10,7 @@ import httpx
 
 
 router = APIRouter(
-    prefix="/erp/ordrrication",
+    prefix="/erp/ordres-fabrication",
     tags=["ERP – Ordres Fabrication"]
 )
 
