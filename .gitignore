@@ -1,5 +1,5 @@
 # Backend (Python)
-backend/venv/
+backend/.venv/
 backend/__pycache__/
 *.pyc
 .env
@@ -15,9 +15,3 @@ Thumbs.db
 
 # Logs
 *.log
-
-.venv/
-node_modules/
-__pycache__/
-*.pyc
-.env
