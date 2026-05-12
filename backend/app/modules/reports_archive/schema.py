@@ -13,6 +13,8 @@ class MESReportInbound(BaseModel):
     date_to:      Optional[str] = Field(None, description="YYYY-MM-DD")
     sent_by:      Optional[str] = Field(None, description="Identifiant de l'instance MES")
     payload:      dict[str, Any] = Field(..., description="Données complètes du rapport MES")
+    pdf_base64:   Optional[str] = Field(None, description="Fichier PDF encodé en base64")
+    excel_base64: Optional[str] = Field(None, description="Fichier Excel encodé en base64")
 
 
 class MESReportResponse(BaseModel):
@@ -22,6 +24,8 @@ class MESReportResponse(BaseModel):
     period_label: str
     received_at:  datetime
     status:       str
+    pdf_path:     Optional[str] = None
+    excel_path:   Optional[str] = None
 
     class Config:
         from_attributes = True

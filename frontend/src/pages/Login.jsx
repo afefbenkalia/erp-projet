@@ -1,5 +1,5 @@
 import { useState, useContext } from "react";
-import api from "../api/axios";
+import { mesApi } from "../api/axios";
 import { AuthContext } from "../context/AuthContext";
 
 import logo from "../assets/logo_sitex.jpg";
@@ -10,22 +10,29 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [focusedField, setFocusedField] = useState(null);
+  const [error, setError] = useState(null);
 
   const { login } = useContext(AuthContext);
 
   const handleLogin = async () => {
     if (!email || !password) {
-      alert("Veuillez remplir tous les champs ❌");
+      setError("Veuillez remplir tous les champs.");
       return;
     }
+    setError(null);
     setIsLoading(true);
     try {
-      const res = await api.post("/auth/login", { email, password });
-      login(res.data.token, res.data.role);
+      const res = await mesApi.post("/auth/login", { email, password });
+      login(res.data.access_token);
       window.location.href = "/ordersfabricationerp";
-    } catch (error) {
-      const message = error.response?.data?.message || "Login failed ❌";
-      alert(message);
+    } catch (err) {
+      if (err.response?.status === 401) {
+        setError("Email ou mot de passe incorrect.");
+      } else if (err.response?.status === 403) {
+        setError("Votre compte n'est pas autorisé à accéder à l'ERP.");
+      } else {
+        setError("Erreur de connexion. Veuillez réessayer.");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -138,6 +145,21 @@ export default function Login() {
               </div>
               
             </div>
+
+            {error && (
+              <div style={{
+                padding: "12px 16px",
+                marginBottom: "16px",
+                background: "#fef2f2",
+                border: "1px solid #fecaca",
+                borderRadius: "10px",
+                color: ERROR,
+                fontSize: "13px",
+                fontWeight: "500",
+              }}>
+                {error}
+              </div>
+            )}
 
             <button
               style={{

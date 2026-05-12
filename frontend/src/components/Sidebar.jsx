@@ -72,18 +72,18 @@ const BORDER_SUBTLE = "rgba(255,255,255,0.08)";
 // ── Menu config ──────────────────────────────────────────
 const menuItems = {
   pro: [
-    //{ path: "/dashboard", label: "Tableau de Bord", icon: <DashboardIcon />, roles: ["admin", "stock", "production"] },
-    { path: "/GestionStock", label: "Gestion des Stocks", icon: <StockIcon />, roles: ["admin", "stock"] },
-    { path: "/ordersfabricationerp", label: "Ordres de Fabrication", icon: <ProductionIcon />, roles: ["admin", "production"] },
-    { path: "/Approvisionnement", label: "Approvisionnement", icon: <SupplyIcon />, roles: ["admin", "supply"] },
-    { path: "/ReportsArchive", label: "Archives & Rapports", icon: <ReportsIcon />, roles: ["admin"] },
+    //{ path: "/dashboard", label: "Tableau de Bord", icon: <DashboardIcon />, roles: ["admin", "manager", "stock", "production"] },
+    { path: "/GestionStock", label: "Gestion des Stocks", icon: <StockIcon />, roles: ["admin", "manager", "stock"] },
+    { path: "/ordersfabricationerp", label: "Ordres de Fabrication", icon: <ProductionIcon />, roles: ["admin", "manager", "production"] },
+    { path: "/Approvisionnement", label: "Approvisionnement", icon: <SupplyIcon />, roles: ["admin", "manager", "supply"] },
+    { path: "/ReportsArchive", label: "Archives & Rapports", icon: <ReportsIcon />, roles: ["admin", "manager"] },
   ],
   industrielle: [
-   // { path: "/dashboard", label: "Tableau de Bord Usine", icon: <DashboardIcon />, roles: ["admin", "production"] },
-    { path: "/ProductionLine", label: "Ligne de Production", icon: <ProductionIcon />, roles: ["admin", "production"] },
-    { path: "/MachineMonitoring", label: "Monitoring Machines", icon: <MonitorIcon />, roles: ["admin", "production"] },
-    { path: "/ordersfabricationerp", label: "Planning Production", icon: <ProductionIcon />, roles: ["admin", "production"] },
-    { path: "/ReportsArchive", label: "Rapports Industriels", icon: <ReportsIcon />, roles: ["admin"] },
+   // { path: "/dashboard", label: "Tableau de Bord Usine", icon: <DashboardIcon />, roles: ["admin", "manager", "production"] },
+    { path: "/ProductionLine", label: "Ligne de Production", icon: <ProductionIcon />, roles: ["admin", "manager", "production"] },
+    { path: "/MachineMonitoring", label: "Monitoring Machines", icon: <MonitorIcon />, roles: ["admin", "manager", "production"] },
+    { path: "/ordersfabricationerp", label: "Planning Production", icon: <ProductionIcon />, roles: ["admin", "manager", "production"] },
+    { path: "/ReportsArchive", label: "Rapports Industriels", icon: <ReportsIcon />, roles: ["admin", "manager"] },
   ],
 };
 

@@ -68,3 +68,22 @@ def count_archived_reports(db: Session, report_type: Optional[str] = None) -> in
     if report_type:
         q = q.filter(MESReportArchive.report_type == report_type)
     return q.count()
+
+
+def attach_files_to_report(
+    db: Session,
+    report_id: int,
+    pdf_path: Optional[str] = None,
+    excel_path: Optional[str] = None,
+) -> Optional[MESReportArchive]:
+    """Met à jour les chemins des fichiers PDF/Excel d'un rapport existant."""
+    record = db.query(MESReportArchive).filter(MESReportArchive.id == report_id).first()
+    if not record:
+        return None
+    if pdf_path is not None:
+        record.pdf_path = pdf_path
+    if excel_path is not None:
+        record.excel_path = excel_path
+    db.commit()
+    db.refresh(record)
+    return record

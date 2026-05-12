@@ -8,15 +8,11 @@ from app.modules.auth.schema import UserLogin
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
 
+# DEPRECATED: Login is now handled by the MES API at http://localhost:8000/auth/login.
+# This endpoint is kept for backward compatibility only and is not called by the frontend.
 @router.post("/login")
 def login(credentials: dict, db: Session = Depends(get_db)):
-    print("=== ENDPOINT LOGIN ===")
-    print(f"Email reçu: {credentials.get('email')}")
-    print(f"Password reçu: {credentials.get('password')}")
-    
-    result = login_user(db, credentials.get('email'), credentials.get('password'))
-    
+    result = login_user(db, credentials.get("email"), credentials.get("password"))
     if not result:
         raise HTTPException(status_code=401, detail="Email ou mot de passe incorrect")
-    
     return result

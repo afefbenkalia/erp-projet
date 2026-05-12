@@ -22,6 +22,8 @@ class MESReportArchive(Base):
     payload      = Column(JSON, nullable=False)        # données brutes du rapport
     status       = Column(String(20), default="archived", nullable=False)
     # "archived" | "processed" | "error"
+    pdf_path     = Column(String(500), nullable=True)  # chemin fichier PDF joint par le MES
+    excel_path   = Column(String(500), nullable=True)  # chemin fichier Excel joint par le MES
 
     def __repr__(self):
         return f"<MESReportArchive id={self.id} type={self.report_type} period={self.period_label}>"
