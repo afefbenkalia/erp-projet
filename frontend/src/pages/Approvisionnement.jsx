@@ -1,33 +1,277 @@
 import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
+import { useTheme } from "../context/ThemeContext";
+import { useLang } from "../context/LangContext";
 
 const BASE = "http://127.0.0.1:8001/api/appro";
 const STOCK_URL = "http://127.0.0.1:8001/api/stock/articles";
 
-// ─── Palette claire ────────────────────────────────────────────
-const C = {
-  bg:       "#f4f6f9",
-  surface:  "#ffffff",
-  card:     "#ffffff",
-  border:   "#e3e8ef",
-  accent:   "#2563eb",
-  accentLt: "#eff4ff",
-  green:    "#16a34a",
-  greenLt:  "#f0fdf4",
-  red:      "#dc2626",
-  redLt:    "#fef2f2",
-  amber:    "#d97706",
-  amberLt:  "#fffbeb",
-  purple:   "#7c3aed",
-  purpleLt: "#f5f3ff",
-  text:     "#111827",
-  sub:      "#374151",
-  muted:    "#6b7280",
-  inputBg:  "#f9fafb",
+// ─── Traductions ────────────────────────────────────────────
+const translations = {
+  fr: {
+    // Général
+    loading: "Chargement...",
+    saving: "Enregistrement...",
+    error: "Erreur",
+    success: "Succès",
+    close: "Fermer",
+    cancel: "Annuler",
+    confirm: "Confirmer",
+    
+    // Topbar
+    appTitle: "ERP — Approvisionnement",
+    appSubtitle: "Fournisseurs • Commandes Achat • Réceptions",
+    online: "En ligne",
+    activeSuppliers: "fournisseurs actifs",
+    
+    // KPIs
+    totalOrders: "Total commandes",
+    sentOrders: "Envoyées",
+    receivedOrders: "Reçues",
+    delayedOrders: "En retard",
+    
+    // Tabs
+    tabOrders: "🛒 Commandes achat",
+    tabSuppliers: "🏢 Fournisseurs",
+    tabReceipts: "📦 Réceptions",
+    
+    // Commandes
+    ordersTitle: "Commandes achat",
+    newOrder: "Nouvelle commande",
+    editOrder: "Modifier la commande",
+    orderNumber: "N° Commande",
+    supplier: "Fournisseur",
+    article: "Article",
+    quantityOrdered: "Quantité commandée (kg)",
+    orderDate: "Date commande",
+    comment: "Commentaire",
+    createOrder: "Créer la commande",
+    updateOrder: "Mettre à jour",
+    noOrders: "Aucune commande trouvée",
+    searchPlaceholder: "N° ou article...",
+    allStatus: "Tous les statuts",
+    allSuppliers: "Tous les fournisseurs",
+    qtyOrdered: "Qté commandée",
+    qtyReceived: "Reçue",
+    progress: "Avancement",
+    status: "Statut",
+    actions: "Actions",
+    send: "Envoyer",
+    receive: "Réceptionner",
+    complete: "Compléter",
+    received: "Reçue",
+    delete: "Supprimer",
+    
+    // Fournisseurs
+    suppliersTitle: "Fournisseurs enregistrés",
+    newSupplier: "Nouveau fournisseur",
+    editSupplier: "Modifier le fournisseur",
+    supplierCode: "Code",
+    supplierName: "Nom",
+    contact: "Contact",
+    phone: "Téléphone",
+    email: "Email",
+    deliveryDelay: "Délai livraison (jours)",
+    suppliedArticle: "Article fourni",
+    statusActive: "Statut",
+    active: "Actif",
+    inactive: "Inactif",
+    address: "Adresse",
+    multiple: "Multiple",
+    noSuppliers: "Aucun fournisseur enregistré",
+    phoneInvalid: "Veuillez entrer 8 chiffres",
+    phoneValid: "Numéro valide",
+    phonePlaceholder: "+216 XX XXX XXX",
+    
+    // Réceptions
+    receiptsTitle: "Historique des réceptions",
+    receiptsSubtitle: "réception(s) — Stock mis à jour automatiquement",
+    receiptInfo: "ℹ️ Chaque réception crée automatiquement un mouvement de stock ENTRÉE dans le module stock ERP.",
+    noReceipts: "Aucune réception enregistrée",
+    receiptHint: "Réceptionnez une commande depuis l'onglet 'Commandes achat'",
+    orderNum: "N° Commande",
+    qtyReceivedLabel: "Quantité reçue",
+    receiptDate: "Date réception",
+    stockMovement: "Mvt. stock",
+    
+    // Modal
+    receiveOrder: "Réceptionner la commande",
+    commanded: "Commandée",
+    alreadyReceived: "Déjà reçue",
+    remaining: "Reste à livrer",
+    qtyToReceive: "Quantité reçue (kg)",
+    receiptDateLabel: "Date réception",
+    observation: "Observations éventuelles",
+    confirmReceipt: "Confirmer la réception",
+    cancelOrder: "Annuler la commande",
+    deleteOrder: "Supprimer la commande",
+    cancelConfirm: "La commande sera marquée comme annulée.",
+    deleteConfirm: "La commande sera supprimée définitivement.",
+    back: "Retour",
+    
+    // Messages feedback
+    orderCreated: "Commande créée",
+    orderUpdated: "Commande mise à jour",
+    orderSent: "Commande envoyée au fournisseur",
+    orderCancelled: "Commande annulée",
+    orderDeleted: "Commande supprimée",
+    receiptSaved: "Réception enregistrée — stock mis à jour automatiquement ✅",
+    supplierCreated: "Fournisseur créé",
+    supplierUpdated: "Fournisseur mis à jour",
+    supplierDeleted: "Fournisseur supprimé",
+    fillRequiredFields: "Remplissez tous les champs obligatoires",
+    errorLoading: "Erreur de chargement",
+  },
+  en: {
+    // General
+    loading: "Loading...",
+    saving: "Saving...",
+    error: "Error",
+    success: "Success",
+    close: "Close",
+    cancel: "Cancel",
+    confirm: "Confirm",
+    
+    // Topbar
+    appTitle: "ERP — Procurement",
+    appSubtitle: "Suppliers • Purchase Orders • Receipts",
+    online: "Online",
+    activeSuppliers: "active suppliers",
+    
+    // KPIs
+    totalOrders: "Total Orders",
+    sentOrders: "Sent",
+    receivedOrders: "Received",
+    delayedOrders: "Delayed",
+    
+    // Tabs
+    tabOrders: "🛒 Purchase Orders",
+    tabSuppliers: "🏢 Suppliers",
+    tabReceipts: "📦 Receipts",
+    
+    // Orders
+    ordersTitle: "Purchase Orders",
+    newOrder: "New Order",
+    editOrder: "Edit Order",
+    orderNumber: "Order #",
+    supplier: "Supplier",
+    article: "Article",
+    quantityOrdered: "Quantity ordered (kg)",
+    orderDate: "Order Date",
+    comment: "Comment",
+    createOrder: "Create Order",
+    updateOrder: "Update",
+    noOrders: "No orders found",
+    searchPlaceholder: "Order # or article...",
+    allStatus: "All statuses",
+    allSuppliers: "All suppliers",
+    qtyOrdered: "Qty Ordered",
+    qtyReceived: "Received",
+    progress: "Progress",
+    status: "Status",
+    actions: "Actions",
+    send: "Send",
+    receive: "Receive",
+    complete: "Complete",
+    received: "Received",
+    delete: "Delete",
+    
+    // Suppliers
+    suppliersTitle: "Registered Suppliers",
+    newSupplier: "New Supplier",
+    editSupplier: "Edit Supplier",
+    supplierCode: "Code",
+    supplierName: "Name",
+    contact: "Contact",
+    phone: "Phone",
+    email: "Email",
+    deliveryDelay: "Delivery delay (days)",
+    suppliedArticle: "Supplied Article",
+    statusActive: "Status",
+    active: "Active",
+    inactive: "Inactive",
+    address: "Address",
+    multiple: "Multiple",
+    noSuppliers: "No suppliers registered",
+    phoneInvalid: "Please enter 8 digits",
+    phoneValid: "Valid number",
+    phonePlaceholder: "+216 XX XXX XXX",
+    
+    // Receipts
+    receiptsTitle: "Receipts History",
+    receiptsSubtitle: "receipt(s) — Stock automatically updated",
+    receiptInfo: "ℹ️ Each receipt automatically creates an ENTRY stock movement in the stock ERP module.",
+    noReceipts: "No receipts recorded",
+    receiptHint: "Receive an order from the 'Purchase Orders' tab",
+    orderNum: "Order #",
+    qtyReceivedLabel: "Quantity received",
+    receiptDate: "Receipt Date",
+    stockMovement: "Stock Mov.",
+    
+    // Modal
+    receiveOrder: "Receive Order",
+    commanded: "Ordered",
+    alreadyReceived: "Already received",
+    remaining: "Remaining to deliver",
+    qtyToReceive: "Quantity received (kg)",
+    receiptDateLabel: "Receipt Date",
+    observation: "Observations",
+    confirmReceipt: "Confirm Receipt",
+    cancelOrder: "Cancel Order",
+    deleteOrder: "Delete Order",
+    cancelConfirm: "The order will be marked as cancelled.",
+    deleteConfirm: "The order will be permanently deleted.",
+    back: "Back",
+    
+    // Messages feedback
+    orderCreated: "Order created",
+    orderUpdated: "Order updated",
+    orderSent: "Order sent to supplier",
+    orderCancelled: "Order cancelled",
+    orderDeleted: "Order deleted",
+    receiptSaved: "Receipt recorded — stock automatically updated ✅",
+    supplierCreated: "Supplier created",
+    supplierUpdated: "Supplier updated",
+    supplierDeleted: "Supplier deleted",
+    fillRequiredFields: "Please fill all required fields",
+    errorLoading: "Loading error",
+  },
 };
 
-// ─── Styles ────────────────────────────────────────────────────
-const s = {
+// ─── Palette factory (dark / light) ────────────────────────
+const makeC = (isDark) => ({
+  bg: isDark ? "#0f172a" : "#f4f6f9",
+  surface: isDark ? "#1e293b" : "#ffffff",
+  border: isDark ? "#334155" : "#e3e8ef",
+  accent: "#2563eb",
+  accentLt: isDark ? "#1e3a5f" : "#eff4ff",
+  green: "#16a34a",
+  greenLt: isDark ? "#14532d" : "#f0fdf4",
+  red: "#dc2626",
+  redLt: isDark ? "#7f1d1d" : "#fef2f2",
+  amber: "#d97706",
+  amberLt: isDark ? "#78350f" : "#fffbeb",
+  purple: "#7c3aed",
+  purpleLt: isDark ? "#3b0764" : "#f5f3ff",
+  text: isDark ? "#f1f5f9" : "#111827",
+  sub: isDark ? "#cbd5e1" : "#374151",
+  muted: isDark ? "#94a3b8" : "#6b7280",
+  inputBg: isDark ? "#0f172a" : "#f9fafb",
+  trOdd: isDark ? "#1e293b" : "#ffffff",
+  trEven: isDark ? "#162032" : "#f4f6f9",
+});
+
+// ─── Couleurs statut commande (dynamiques avec le thème) ───
+const getStatutStyle = (C) => ({
+  "Brouillon": { bg: C.amberLt, color: C.amber, border: "#fde68a", icon: "✏️" },
+  "Envoyée": { bg: "#fef9c3", color: "#854d0e", border: "#fde68a", icon: "📤" },
+  "Reçue partielle": { bg: "#fed7aa", color: "#9a3412", border: "#fdba74", icon: "⚠️" },
+  "Reçue totale": { bg: C.greenLt, color: C.green, border: "#bbf7d0", icon: "✅" },
+  "Annulée": { bg: C.redLt, color: C.red, border: "#fecaca", icon: "❌" },
+});
+
+// ─── Style factory (dynamique avec le thème) ───────────────
+const makeS = (C) => ({
   app: {
     fontFamily: "'IBM Plex Sans', 'Segoe UI', sans-serif",
     background: C.bg,
@@ -81,14 +325,14 @@ const s = {
     gap: "1rem",
     marginBottom: "1.75rem",
   },
-  kpiCard: (accent, lt) => ({
+  kpiCard: {
     background: C.surface,
     border: `1px solid ${C.border}`,
     borderRadius: 10,
     padding: "1.1rem 1.25rem",
     display: "flex", alignItems: "center", gap: "1rem",
     boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
-  }),
+  },
   kpiIcon: (lt) => ({
     width: 40, height: 40, borderRadius: 8,
     background: lt,
@@ -154,7 +398,7 @@ const s = {
   },
   inputReadOnly: {
     padding: "0.6rem 0.85rem",
-    background: "#f3f4f6",
+    background: isDark => isDark ? "#1e293b" : "#f3f4f6",
     border: `1px solid ${C.border}`,
     borderRadius: 7,
     color: C.muted,
@@ -237,7 +481,7 @@ const s = {
     letterSpacing: "0.05em", textTransform: "uppercase",
   },
   tr: (i) => ({
-    background: i % 2 === 0 ? "#fff" : C.bg,
+    background: i % 2 === 0 ? C.trOdd : C.trEven,
   }),
   td: { padding: "0.7rem 0.9rem", borderBottom: `1px solid ${C.border}`, color: C.sub, verticalAlign: "middle" },
 
@@ -268,7 +512,7 @@ const s = {
     padding: "0.75rem 1rem",
     marginBottom: "1.25rem",
     fontSize: "0.85rem",
-    color: "#1d4ed8",
+    color: C.accent,
     lineHeight: 1.5,
   },
   emptyState: {
@@ -302,20 +546,11 @@ const s = {
     height: 6, borderRadius: 3,
     background: `linear-gradient(to right, ${color} ${pct}%, #e5e7eb ${pct}%)`,
   }),
-};
-
-// ─── Couleurs statut commande ─────────────────────────────────────────────
-const STATUT_STYLE = {
-  "Brouillon":        { bg: C.amberLt, color: C.amber, border: "#fde68a", icon: "✏️" },
-  "Envoyée":          { bg: "#fef9c3", color: "#854d0e", border: "#fde68a", icon: "📤" },
-  "Reçue partielle":  { bg: "#fed7aa", color: "#9a3412", border: "#fdba74", icon: "⚠️" },
-  "Reçue totale":     { bg: C.greenLt, color: C.green, border: "#bbf7d0", icon: "✅" },
-  "Annulée":          { bg: C.redLt, color: C.red, border: "#fecaca", icon: "❌" },
-};
+});
 
 const fmt = (n) => Number(n || 0).toLocaleString("fr-FR", { maximumFractionDigits: 2 });
 
-// ─── Générateur de numéro séquentiel ────────────────────────────────────────
+// ─── Générateur de numéro séquentiel ────────────────────────
 const genNumero = (prefix, existing) => {
   const today = new Date();
   const yy = String(today.getFullYear()).slice(2);
@@ -332,7 +567,7 @@ const genNumero = (prefix, existing) => {
   return `${pref}-${String(next).padStart(3, "0")}`;
 };
 
-// ─── Fonctions pour le téléphone tunisien ────────────────────────────
+// ─── Fonctions pour le téléphone tunisien ────────────────────
 const extractPhoneDigits = (phone) => {
   if (!phone) return "";
   return phone.replace(/\D/g, '');
@@ -366,6 +601,14 @@ const validateTunisianPhone = (phone) => {
 
 // ══════════════════════════════════════════════════════════════════════════════
 const Approvisionnement = () => {
+  const { isDark } = useTheme();
+  const { lang } = useLang();
+  const t = translations[lang] || translations.fr;
+
+  const C = makeC(isDark);
+  const STATUT_STYLE = getStatutStyle(C);
+  const s = makeS(C);
+
   const [tab, setTab] = useState("commandes");
   const [commandes, setCommandes] = useState([]);
   const [fournisseurs, setFournisseurs] = useState([]);
@@ -404,7 +647,6 @@ const Approvisionnement = () => {
     quantite_recue: "", date_reception: "", commentaire: "",
   });
 
-  // Date du jour automatique
   const todayDate = new Date().toISOString().slice(0, 10);
 
   const showMsg = (text, type = "success") => {
@@ -426,8 +668,8 @@ const Approvisionnement = () => {
       setArticles(artRes.data);
       setReceptions(recRes.data);
       setDashboard(dashRes.data);
-    } catch { showMsg("Erreur de chargement", "error"); }
-  }, []);
+    } catch { showMsg(t.errorLoading, "error"); }
+  }, [t]);
 
   useEffect(() => { loadAll(); }, [loadAll]);
 
@@ -445,7 +687,7 @@ const Approvisionnement = () => {
 
   const handleSubmitCmd = async () => {
     if (!formCmd.fournisseur_id || !formCmd.article_code || !formCmd.quantite_commandee) {
-      return showMsg("Remplissez tous les champs obligatoires", "error");
+      return showMsg(t.fillRequiredFields, "error");
     }
     setLoading(true);
     try {
@@ -459,40 +701,40 @@ const Approvisionnement = () => {
       };
       if (editCmd) {
         await axios.put(`${BASE}/commandes/${editCmd.id}`, payload);
-        showMsg(`Commande ${formCmd.numero} mise à jour`);
+        showMsg(`${t.orderUpdated} ${formCmd.numero}`);
       } else {
         await axios.post(`${BASE}/commandes`, payload);
-        showMsg(`Commande ${formCmd.numero} créée`);
+        showMsg(`${t.orderCreated} ${formCmd.numero}`);
       }
       setShowFormCmd(false); setEditCmd(null); resetFormCmd();
       loadAll();
     } catch (err) {
-      showMsg(err.response?.data?.detail || "Erreur", "error");
+      showMsg(err.response?.data?.detail || t.error, "error");
     } finally { setLoading(false); }
   };
 
   const handleEnvoyer = async (c) => {
     try {
       await axios.post(`${BASE}/commandes/${c.id}/envoyer`);
-      showMsg(`Commande ${c.numero} envoyée au fournisseur`);
+      showMsg(`${t.orderSent} ${c.numero}`);
       loadAll();
-    } catch (err) { showMsg(err.response?.data?.detail || "Erreur", "error"); }
+    } catch (err) { showMsg(err.response?.data?.detail || t.error, "error"); }
   };
 
   const handleAnnuler = async () => {
     try {
       await axios.post(`${BASE}/commandes/${confirmAnnuler.id}/annuler`);
-      showMsg(`Commande ${confirmAnnuler.numero} annulée`);
+      showMsg(`${t.orderCancelled} ${confirmAnnuler.numero}`);
       setConfirmAnnuler(null); loadAll();
-    } catch (err) { showMsg(err.response?.data?.detail || "Erreur", "error"); }
+    } catch (err) { showMsg(err.response?.data?.detail || t.error, "error"); }
   };
 
   const handleDeleteCmd = async () => {
     try {
       await axios.delete(`${BASE}/commandes/${confirmDelete.id}`);
-      showMsg(`Commande ${confirmDelete.numero} supprimée`);
+      showMsg(`${t.orderDeleted} ${confirmDelete.numero}`);
       setConfirmDelete(null); loadAll();
-    } catch (err) { showMsg(err.response?.data?.detail || "Erreur", "error"); }
+    } catch (err) { showMsg(err.response?.data?.detail || t.error, "error"); }
   };
 
   const openEditCmd = (c) => {
@@ -519,7 +761,7 @@ const Approvisionnement = () => {
 
   const handleReception = async () => {
     if (!formRec.quantite_recue || !formRec.date_reception) {
-      return showMsg("Remplissez quantité et date de réception", "error");
+      return showMsg(t.fillRequiredFields, "error");
     }
     setLoading(true);
     try {
@@ -529,22 +771,22 @@ const Approvisionnement = () => {
         date_reception: formRec.date_reception,
         commentaire: formRec.commentaire || null,
       });
-      showMsg(`Réception enregistrée — stock mis à jour automatiquement ✅`);
+      showMsg(t.receiptSaved);
       setShowReception(null);
       setFormRec({ quantite_recue: "", date_reception: "", commentaire: "" });
       loadAll();
     } catch (err) {
-      showMsg(err.response?.data?.detail || "Erreur réception", "error");
+      showMsg(err.response?.data?.detail || t.error, "error");
     } finally { setLoading(false); }
   };
 
   const handleSubmitFour = async () => {
     if (!formFour.code || !formFour.nom) {
-      return showMsg("Code et nom sont obligatoires", "error");
+      return showMsg(t.fillRequiredFields, "error");
     }
     
     if (formFour.telephone && formFour.telephone !== "+216 " && !validateTunisianPhone(formFour.telephone)) {
-      return showMsg("Le numéro de téléphone doit contenir exactement 8 chiffres", "error");
+      return showMsg(t.phoneInvalid, "error");
     }
     
     setLoading(true);
@@ -562,26 +804,26 @@ const Approvisionnement = () => {
       
       if (editFour) {
         await axios.put(`${BASE}/fournisseurs/${editFour.id}`, cleanedForm);
-        showMsg(`Fournisseur ${formFour.nom} mis à jour`);
+        showMsg(`${t.supplierUpdated} ${formFour.nom}`);
       } else {
         await axios.post(`${BASE}/fournisseurs`, cleanedForm);
-        showMsg(`Fournisseur ${formFour.nom} créé`);
+        showMsg(`${t.supplierCreated} ${formFour.nom}`);
       }
       setShowFormFour(false); setEditFour(null);
       setFormFour({ code: "", nom: "", contact: "", telephone: "+216 ", email: "", adresse: "", article_code: "", article_nom: "", delai_livraison_jours: 7, actif: "Actif" });
       loadAll();
     } catch (err) {
-      showMsg(err.response?.data?.detail || "Erreur", "error");
+      showMsg(err.response?.data?.detail || t.error, "error");
     } finally { setLoading(false); }
   };
 
   const handleDeleteFour = async (f) => {
-    if (!window.confirm(`Supprimer le fournisseur ${f.nom} ?`)) return;
+    if (!window.confirm(`${t.supplierDeleted} ${f.nom} ?`)) return;
     try {
       await axios.delete(`${BASE}/fournisseurs/${f.id}`);
-      showMsg(`Fournisseur ${f.nom} supprimé`);
+      showMsg(`${t.supplierDeleted} ${f.nom}`);
       loadAll();
-    } catch (err) { showMsg(err.response?.data?.detail || "Erreur", "error"); }
+    } catch (err) { showMsg(err.response?.data?.detail || t.error, "error"); }
   };
 
   const handlePhoneChange = (e) => {
@@ -604,16 +846,16 @@ const Approvisionnement = () => {
   );
 
   const kpis = [
-    { label: "Total commandes", val: dashboard?.total_commandes ?? 0, color: C.accent, lt: C.accentLt, icon: "🛒" },
-    { label: "Envoyées", val: dashboard?.commandes_envoyees ?? 0, color: C.amber, lt: C.amberLt, icon: "📤" },
-    { label: "Reçues", val: dashboard?.commandes_recues ?? 0, color: C.green, lt: C.greenLt, icon: "✅" },
-    { label: "En retard", val: dashboard?.commandes_en_retard ?? 0, color: C.red, lt: C.redLt, icon: "⏰" },
+    { label: t.totalOrders, val: dashboard?.total_commandes ?? 0, color: C.accent, lt: C.accentLt, icon: "🛒" },
+    { label: t.sentOrders, val: dashboard?.commandes_envoyees ?? 0, color: C.amber, lt: C.amberLt, icon: "📤" },
+    { label: t.receivedOrders, val: dashboard?.commandes_recues ?? 0, color: C.green, lt: C.greenLt, icon: "✅" },
+    { label: t.delayedOrders, val: dashboard?.commandes_en_retard ?? 0, color: C.red, lt: C.redLt, icon: "⏰" },
   ];
 
   const tabs = [
-    { id: "commandes", label: "🛒 Commandes achat" },
-    { id: "fournisseurs", label: "🏢 Fournisseurs" },
-    { id: "receptions", label: "📦 Réceptions" },
+    { id: "commandes", label: t.tabOrders },
+    { id: "fournisseurs", label: t.tabSuppliers },
+    { id: "receptions", label: t.tabReceipts },
   ];
 
   return (
@@ -622,13 +864,13 @@ const Approvisionnement = () => {
         <div style={s.logoRow}>
           <div style={s.logo}>A</div>
           <div>
-            <p style={s.h1}>ERP — Approvisionnement</p>
-            <p style={s.h1sub}>Fournisseurs • Commandes Achat • Réceptions</p>
+            <p style={s.h1}>{t.appTitle}</p>
+            <p style={s.h1sub}>{t.appSubtitle}</p>
           </div>
         </div>
         <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
-          <span style={s.badgeOnline}><span style={s.dot} />En ligne</span>
-          <span style={s.badgeSync}>{dashboard?.fournisseurs_actifs ?? 0} fournisseurs actifs</span>
+          <span style={s.badgeOnline}><span style={s.dot} />{t.online}</span>
+          <span style={s.badgeSync}>{dashboard?.fournisseurs_actifs ?? 0} {t.activeSuppliers}</span>
         </div>
       </div>
 
@@ -644,8 +886,8 @@ const Approvisionnement = () => {
         )}
 
         <div style={s.kpiRow}>
-          {kpis.map((k) => (
-            <div key={k.label} style={s.kpiCard(k.color, k.lt)}>
+          {kpis.map((k, idx) => (
+            <div key={idx} style={s.kpiCard}>
               <div style={s.kpiIcon(k.lt)}>{k.icon}</div>
               <div>
                 <p style={s.kpiLabel}>{k.label.toUpperCase()}</p>
@@ -656,9 +898,9 @@ const Approvisionnement = () => {
         </div>
 
         <div style={s.tabRow}>
-          {tabs.map((t) => (
-            <button key={t.id} style={s.tab(tab === t.id)} onClick={() => setTab(t.id)}>
-              {t.label}
+          {tabs.map((tabItem) => (
+            <button key={tabItem.id} style={s.tab(tab === tabItem.id)} onClick={() => setTab(tabItem.id)}>
+              {tabItem.label}
             </button>
           ))}
         </div>
@@ -670,21 +912,21 @@ const Approvisionnement = () => {
               <div style={s.section}>
                 <div style={s.sectionHeader}>
                   <div>
-                    <p style={s.sectionTitle}>{editCmd ? "✏️ Modifier la commande" : "➕ Nouvelle commande achat"}</p>
+                    <p style={s.sectionTitle}>{editCmd ? t.editOrder : t.newOrder}</p>
                   </div>
-                  <button style={s.btnGhost} onClick={() => { setShowFormCmd(false); setEditCmd(null); }}>✕ Fermer</button>
+                  <button style={s.btnGhost} onClick={() => { setShowFormCmd(false); setEditCmd(null); }}>✕ {t.close}</button>
                 </div>
 
                 <div style={s.grid3}>
                   <div style={s.fg}>
-                    <label style={s.label}>N° Commande</label>
+                    <label style={s.label}>{t.orderNumber}</label>
                     <input style={{ ...s.input, fontFamily: "monospace", fontWeight: 600, background: C.inputBg }}
                       value={formCmd.numero} readOnly={!editCmd}
                       onChange={(e) => setFormCmd({ ...formCmd, numero: e.target.value })} />
                   </div>
                  
                   <div style={s.fg}>
-                    <label style={s.label}>Fournisseur <span style={s.req}>*</span></label>
+                    <label style={s.label}>{t.supplier} <span style={s.req}>*</span></label>
                     <select style={s.select} value={formCmd.fournisseur_id}
                       onChange={(e) => {
                         const f = fournisseurs.find((x) => x.id === parseInt(e.target.value));
@@ -696,37 +938,37 @@ const Approvisionnement = () => {
                           article_nom: f?.article_nom || formCmd.article_nom,
                         });
                       }}>
-                      <option value="">Sélectionner...</option>
+                      <option value="">{t.allSuppliers}</option>
                       {fournisseurs.filter((f) => f.actif === "Actif").map((f) => (
                         <option key={f.id} value={f.id}>{f.nom}</option>
                       ))}
                     </select>
                   </div>
                   <div style={s.fg}>
-                    <label style={s.label}>Article (stock) <span style={s.req}>*</span></label>
+                    <label style={s.label}>{t.article} <span style={s.req}>*</span></label>
                     <select style={s.select} value={formCmd.article_code}
                       onChange={(e) => {
                         const a = articles.find((x) => x.code === e.target.value);
                         setFormCmd({ ...formCmd, article_code: e.target.value, article_nom: a?.nom || "" });
                       }}>
-                      <option value="">Sélectionner...</option>
+                      <option value="">{t.allSuppliers}</option>
                       {articles.filter((a) => a.type_article === "matiere_premiere").map((a) => (
                         <option key={a.code} value={a.code}>{a.code} — {a.nom}</option>
                       ))}
                     </select>
                   </div>
                   <div style={s.fg}>
-                    <label style={s.label}>Quantité commandée (kg) <span style={s.req}>*</span></label>
+                    <label style={s.label}>{t.quantityOrdered} <span style={s.req}>*</span></label>
                     <input style={s.input} type="number" min="0.01" step="0.01" placeholder="500"
                       value={formCmd.quantite_commandee}
                       onChange={(e) => setFormCmd({ ...formCmd, quantite_commandee: e.target.value })} />
                   </div>
                    <div style={s.fg}>
-                    <label style={s.label}>Date commande</label>
+                    <label style={s.label}>{t.orderDate}</label>
                     <input style={s.inputReadOnly} type="date" value={todayDate} readOnly disabled />
                   </div>
                   <div style={{ ...s.fg, gridColumn: "span 2" }}>
-                    <label style={s.label}>Commentaire</label>
+                    <label style={s.label}>{t.comment}</label>
                     <textarea style={s.textarea} value={formCmd.commentaire}
                       onChange={(e) => setFormCmd({ ...formCmd, commentaire: e.target.value })}
                       placeholder="Instructions de livraison, référence contrat..." />
@@ -734,9 +976,9 @@ const Approvisionnement = () => {
                 </div>
 
                 <div style={s.btnRow}>
-                  <button style={s.btnSecondary} onClick={() => { setShowFormCmd(false); setEditCmd(null); }}>Annuler</button>
+                  <button style={s.btnSecondary} onClick={() => { setShowFormCmd(false); setEditCmd(null); }}>{t.cancel}</button>
                   <button style={s.btnPrimary} onClick={handleSubmitCmd} disabled={loading}>
-                    {loading ? "⏳..." : editCmd ? "💾 Mettre à jour" : "💾 Créer la commande"}
+                    {loading ? t.saving : editCmd ? t.updateOrder : t.createOrder}
                   </button>
                 </div>
               </div>
@@ -745,34 +987,34 @@ const Approvisionnement = () => {
             <div style={s.section}>
               <div style={s.sectionHeader}>
                 <div>
-                  <p style={s.sectionTitle}>Commandes achat</p>
+                  <p style={s.sectionTitle}>{t.ordersTitle}</p>
                   <p style={s.sectionSub}>{filtered.length} commande(s)</p>
                 </div>
                 {!showFormCmd && (
                   <button style={s.btnPrimary} onClick={() => { setEditCmd(null); resetFormCmd(); setShowFormCmd(true); }}>
-                    + Nouvelle commande
+                    + {t.newOrder}
                   </button>
                 )}
               </div>
 
               <div style={s.filterRow}>
                 <div style={s.filterGroup}>
-                  <label style={s.label}>🔍 Recherche</label>
-                  <input style={s.input} placeholder="N° ou article..." value={searchCmd} onChange={(e) => setSearchCmd(e.target.value)} />
+                  <label style={s.label}>🔍 {t.searchPlaceholder}</label>
+                  <input style={s.input} placeholder={t.searchPlaceholder} value={searchCmd} onChange={(e) => setSearchCmd(e.target.value)} />
                 </div>
                 <div style={s.filterGroup}>
-                  <label style={s.label}>Statut</label>
+                  <label style={s.label}>{t.status}</label>
                   <select style={s.select} value={filterStatut} onChange={(e) => setFilterStatut(e.target.value)}>
-                    <option value="">Tous les statuts</option>
+                    <option value="">{t.allStatus}</option>
                     {Object.keys(STATUT_STYLE).map((s_) => (
                       <option key={s_} value={s_}>{STATUT_STYLE[s_].icon} {s_}</option>
                     ))}
                   </select>
                 </div>
                 <div style={s.filterGroup}>
-                  <label style={s.label}>Fournisseur</label>
+                  <label style={s.label}>{t.supplier}</label>
                   <select style={s.select} value={filterFour} onChange={(e) => setFilterFour(e.target.value)}>
-                    <option value="">Tous les fournisseurs</option>
+                    <option value="">{t.allSuppliers}</option>
                     {fournisseurs.map((f) => <option key={f.id} value={f.id}>{f.nom}</option>)}
                   </select>
                 </div>
@@ -781,14 +1023,14 @@ const Approvisionnement = () => {
               {filtered.length === 0 ? (
                 <div style={s.emptyState}>
                   <div style={s.emptyIcon}>🛒</div>
-                  <p style={{ fontWeight: 500 }}>Aucune commande trouvée</p>
+                  <p style={{ fontWeight: 500 }}>{t.noOrders}</p>
                 </div>
               ) : (
                 <div style={{ overflowX: "auto" }}>
                   <table style={s.table}>
                     <thead style={s.thead}>
                       <tr>
-                        {["N° Commande", "Date", "Fournisseur", "Article", "Qté commandée", "Reçue", "Avancement", "Statut", "Actions"].map((h) => (
+                        {[t.orderNumber, t.orderDate, t.supplier, t.article, t.qtyOrdered, t.qtyReceived, t.progress, t.status, t.actions].map((h) => (
                           <th key={h} style={s.th}>{h}</th>
                         ))}
                       </tr>
@@ -827,26 +1069,26 @@ const Approvisionnement = () => {
                               <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
                                 {c.statut === "Brouillon" && (
                                   <>
-                                    <button style={s.btnGhost} onClick={() => openEditCmd(c)} title="Modifier">✏️</button>
-                                    <button style={s.btnAction(C.accentLt, C.accent, "#bfdbfe")} onClick={() => handleEnvoyer(c)}>📤 Envoyer</button>
+                                    <button style={s.btnGhost} onClick={() => openEditCmd(c)} title={t.editOrder}>✏️</button>
+                                    <button style={s.btnAction(C.accentLt, C.accent, "#bfdbfe")} onClick={() => handleEnvoyer(c)}>📤 {t.send}</button>
                                     <button style={s.btnDanger} onClick={() => setConfirmDelete(c)}>🗑</button>
                                   </>
                                 )}
                                 {c.statut === "Envoyée" && (
                                   <>
                                     <button style={s.btnAction(C.greenLt, C.green, "#bbf7d0")} onClick={() => { setShowReception(c); setFormRec({ quantite_recue: "", date_reception: new Date().toISOString().slice(0, 10), commentaire: "" }); }}>
-                                      📦 Réceptionner
+                                      📦 {t.receive}
                                     </button>
                                     <button style={s.btnDanger} onClick={() => setConfirmAnnuler(c)}>✕</button>
                                   </>
                                 )}
                                 {c.statut === "Reçue partielle" && (
                                   <button style={s.btnAction(C.greenLt, C.green, "#bbf7d0")} onClick={() => { setShowReception(c); setFormRec({ quantite_recue: "", date_reception: new Date().toISOString().slice(0, 10), commentaire: "" }); }}>
-                                    📦 Compléter
+                                    📦 {t.complete}
                                   </button>
                                 )}
                                 {c.statut === "Reçue totale" && (
-                                  <span style={{ color: C.green, fontSize: "0.8rem", fontWeight: 500 }}>✓ Reçue</span>
+                                  <span style={{ color: C.green, fontSize: "0.8rem", fontWeight: 500 }}>✓ {t.received}</span>
                                 )}
                               </div>
                             </td>
@@ -868,29 +1110,29 @@ const Approvisionnement = () => {
               <div style={s.section}>
                 <div style={s.sectionHeader}>
                   <div>
-                    <p style={s.sectionTitle}>{editFour ? "✏️ Modifier le fournisseur" : "➕ Nouveau fournisseur"}</p>
+                    <p style={s.sectionTitle}>{editFour ? t.editSupplier : t.newSupplier}</p>
                   </div>
-                  <button style={s.btnGhost} onClick={() => { setShowFormFour(false); setEditFour(null); }}>✕ Fermer</button>
+                  <button style={s.btnGhost} onClick={() => { setShowFormFour(false); setEditFour(null); }}>✕ {t.close}</button>
                 </div>
                 <div style={s.grid3}>
                   <div style={s.fg}>
-                    <label style={s.label}>Code <span style={s.req}>*</span></label>
+                    <label style={s.label}>{t.supplierCode} <span style={s.req}>*</span></label>
                     <input style={s.input} placeholder="ex: FOUR-001" value={formFour.code}
                       onChange={(e) => setFormFour({ ...formFour, code: e.target.value.toUpperCase() })}
                       disabled={!!editFour} />
                   </div>
                   <div style={s.fg}>
-                    <label style={s.label}>Nom <span style={s.req}>*</span></label>
+                    <label style={s.label}>{t.supplierName} <span style={s.req}>*</span></label>
                     <input style={s.input} placeholder="Nom du fournisseur" value={formFour.nom}
                       onChange={(e) => setFormFour({ ...formFour, nom: e.target.value })} />
                   </div>
                   <div style={s.fg}>
-                    <label style={s.label}>Contact</label>
+                    <label style={s.label}>{t.contact}</label>
                     <input style={s.input} placeholder="Nom du contact" value={formFour.contact}
                       onChange={(e) => setFormFour({ ...formFour, contact: e.target.value })} />
                   </div>
                   <div style={s.fg}>
-                    <label style={s.label}>Téléphone</label>
+                    <label style={s.label}>{t.phone}</label>
                     <input 
                       style={{
                         ...s.input,
@@ -898,63 +1140,63 @@ const Approvisionnement = () => {
                         letterSpacing: "0.5px",
                         borderColor: formFour.telephone && formFour.telephone !== "+216 " && !validateTunisianPhone(formFour.telephone) ? C.red : C.border
                       }}
-                      placeholder="+216 XX XXX XXX"
+                      placeholder={t.phonePlaceholder}
                       value={formFour.telephone}
                       onChange={handlePhoneChange}
                     />
                     {formFour.telephone && formFour.telephone !== "+216 " && !validateTunisianPhone(formFour.telephone) && (
                       <div style={{ color: C.red, fontSize: "0.7rem", marginTop: "0.25rem" }}>
-                        ❌ Veuillez entrer 8 chiffres
+                        ❌ {t.phoneInvalid}
                       </div>
                     )}
                     {formFour.telephone && formFour.telephone !== "+216 " && validateTunisianPhone(formFour.telephone) && (
                       <div style={{ color: C.green, fontSize: "0.7rem", marginTop: "0.25rem" }}>
-                        ✓ Numéro valide
+                        ✓ {t.phoneValid}
                       </div>
                     )}
                   </div>
                   <div style={s.fg}>
-                    <label style={s.label}>Email</label>
+                    <label style={s.label}>{t.email}</label>
                     <input style={s.input} type="email" placeholder="contact@fournisseur.com" value={formFour.email}
                       onChange={(e) => setFormFour({ ...formFour, email: e.target.value })} />
                   </div>
                   <div style={s.fg}>
-                    <label style={s.label}>Délai livraison (jours)</label>
+                    <label style={s.label}>{t.deliveryDelay}</label>
                     <input style={s.input} type="number" min="1" value={formFour.delai_livraison_jours}
                       onChange={(e) => setFormFour({ ...formFour, delai_livraison_jours: parseInt(e.target.value) })} />
                   </div>
                   <div style={s.fg}>
-                    <label style={s.label}>Article fourni (code stock)</label>
+                    <label style={s.label}>{t.suppliedArticle}</label>
                     <select style={s.select} value={formFour.article_code}
                       onChange={(e) => {
                         const a = articles.find((x) => x.code === e.target.value);
                         setFormFour({ ...formFour, article_code: e.target.value, article_nom: a?.nom || "" });
                       }}>
-                      <option value="">Aucun (multiple)</option>
+                      <option value="">{t.multiple}</option>
                       {articles.filter((a) => a.type_article === "matiere_premiere").map((a) => (
                         <option key={a.code} value={a.code}>{a.code} — {a.nom}</option>
                       ))}
                     </select>
                   </div>
                   <div style={s.fg}>
-                    <label style={s.label}>Statut</label>
+                    <label style={s.label}>{t.statusActive}</label>
                     <select style={s.select} value={formFour.actif}
                       onChange={(e) => setFormFour({ ...formFour, actif: e.target.value })}>
-                      <option value="Actif">Actif</option>
-                      <option value="Inactif">Inactif</option>
+                      <option value="Actif">{t.active}</option>
+                      <option value="Inactif">{t.inactive}</option>
                     </select>
                   </div>
                   <div style={{ ...s.fg, gridColumn: "span 3" }}>
-                    <label style={s.label}>Adresse</label>
+                    <label style={s.label}>{t.address}</label>
                     <textarea style={s.textarea} value={formFour.adresse}
                       onChange={(e) => setFormFour({ ...formFour, adresse: e.target.value })}
-                      placeholder="Adresse complète du fournisseur..." />
+                      placeholder={t.address} />
                   </div>
                 </div>
                 <div style={s.btnRow}>
-                  <button style={s.btnSecondary} onClick={() => { setShowFormFour(false); setEditFour(null); }}>Annuler</button>
+                  <button style={s.btnSecondary} onClick={() => { setShowFormFour(false); setEditFour(null); }}>{t.cancel}</button>
                   <button style={s.btnPrimary} onClick={handleSubmitFour} disabled={loading}>
-                    {loading ? "⏳..." : editFour ? "💾 Mettre à jour" : "💾 Créer le fournisseur"}
+                    {loading ? t.saving : editFour ? t.updateOrder : t.newSupplier}
                   </button>
                 </div>
               </div>
@@ -963,12 +1205,12 @@ const Approvisionnement = () => {
             <div style={s.section}>
               <div style={s.sectionHeader}>
                 <div>
-                  <p style={s.sectionTitle}>Fournisseurs enregistrés</p>
+                  <p style={s.sectionTitle}>{t.suppliersTitle}</p>
                   <p style={s.sectionSub}>{fournisseurs.length} fournisseur(s)</p>
                 </div>
                 {!showFormFour && (
                   <button style={s.btnPrimary} onClick={() => { setEditFour(null); setShowFormFour(true); }}>
-                    + Nouveau fournisseur
+                    + {t.newSupplier}
                   </button>
                 )}
               </div>
@@ -976,14 +1218,14 @@ const Approvisionnement = () => {
               {fournisseurs.length === 0 ? (
                 <div style={s.emptyState}>
                   <div style={s.emptyIcon}>🏢</div>
-                  <p style={{ fontWeight: 500 }}>Aucun fournisseur enregistré</p>
+                  <p style={{ fontWeight: 500 }}>{t.noSuppliers}</p>
                 </div>
               ) : (
                 <div style={{ overflowX: "auto" }}>
                   <table style={s.table}>
                     <thead style={s.thead}>
                       <tr>
-                        {["Code", "Nom", "Contact", "Téléphone", "Article fourni", "Délai (j)", "Statut", "Actions"].map((h) => (
+                        {[t.supplierCode, t.supplierName, t.contact, t.phone, t.suppliedArticle, t.deliveryDelay, t.statusActive, t.actions].map((h) => (
                           <th key={h} style={s.th}>{h}</th>
                         ))}
                       </tr>
@@ -1011,7 +1253,7 @@ const Approvisionnement = () => {
                             <td style={s.td}>
                               {f.article_code
                                 ? <span style={s.pill(C.purpleLt, C.purple, "#ddd6fe")}>{f.article_code}</span>
-                                : <span style={{ color: C.muted, fontSize: "0.8rem" }}>Multiple</span>}
+                                : <span style={{ color: C.muted, fontSize: "0.8rem" }}>{t.multiple}</span>}
                             </td>
                             <td style={s.td}>{f.delai_livraison_jours} j</td>
                             <td style={s.td}>
@@ -1020,7 +1262,7 @@ const Approvisionnement = () => {
                                 f.actif === "Actif" ? C.green : C.red,
                                 f.actif === "Actif" ? "#bbf7d0" : "#fecaca"
                               )}>
-                                {f.actif === "Actif" ? "● Actif" : "○ Inactif"}
+                                {f.actif === "Actif" ? `● ${t.active}` : `○ ${t.inactive}`}
                               </span>
                             </td>
                             <td style={s.td}>
@@ -1068,25 +1310,25 @@ const Approvisionnement = () => {
           <div style={s.section}>
             <div style={s.sectionHeader}>
               <div>
-                <p style={s.sectionTitle}>Historique des réceptions</p>
-                <p style={s.sectionSub}>{receptions.length} réception(s) — Stock mis à jour automatiquement</p>
+                <p style={s.sectionTitle}>{t.receiptsTitle}</p>
+                <p style={s.sectionSub}>{receptions.length} {t.receiptsSubtitle}</p>
               </div>
             </div>
             <div style={s.infoBox}>
-              ℹ️ Chaque réception crée automatiquement un mouvement de stock <strong>ENTRÉE</strong> dans le module stock ERP.
+              ℹ️ {t.receiptInfo}
             </div>
             {receptions.length === 0 ? (
               <div style={s.emptyState}>
                 <div style={s.emptyIcon}>📦</div>
-                <p style={{ fontWeight: 500 }}>Aucune réception enregistrée</p>
-                <p style={{ fontSize: "0.85rem" }}>Réceptionnez une commande depuis l'onglet "Commandes achat"</p>
+                <p style={{ fontWeight: 500 }}>{t.noReceipts}</p>
+                <p style={{ fontSize: "0.85rem" }}>{t.receiptHint}</p>
               </div>
             ) : (
               <div style={{ overflowX: "auto" }}>
                 <table style={s.table}>
                   <thead style={s.thead}>
                     <tr>
-                      {["N° Commande", "Quantité reçue", "Date réception", "Mvt. stock", "Commentaire"].map((h) => (
+                      {[t.orderNum, t.qtyReceivedLabel, t.receiptDate, t.stockMovement, t.comment].map((h) => (
                         <th key={h} style={s.th}>{h}</th>
                       ))}
                     </tr>
@@ -1121,48 +1363,48 @@ const Approvisionnement = () => {
       {showReception && (
         <div style={s.modalOverlay} onClick={() => setShowReception(null)}>
           <div style={s.modal} onClick={(e) => e.stopPropagation()}>
-            <h3 style={{ margin: "0 0 0.25rem", color: C.text, fontSize: "1rem" }}>📦 Réceptionner la commande</h3>
+            <h3 style={{ margin: "0 0 0.25rem", color: C.text, fontSize: "1rem" }}>📦 {t.receiveOrder}</h3>
             <p style={{ margin: "0 0 1.25rem", color: C.muted, fontSize: "0.85rem" }}>
               {showReception.numero} · {showReception.article_nom}
             </p>
             <div style={{ background: C.bg, borderRadius: 8, padding: "0.75rem 1rem", marginBottom: "1.25rem", fontSize: "0.85rem" }}>
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-                <span style={{ color: C.muted }}>Commandée</span>
+                <span style={{ color: C.muted }}>{t.commanded}</span>
                 <strong>{fmt(showReception.quantite_commandee)} kg</strong>
               </div>
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-                <span style={{ color: C.muted }}>Déjà reçue</span>
+                <span style={{ color: C.muted }}>{t.alreadyReceived}</span>
                 <strong style={{ color: C.green }}>{fmt(showReception.quantite_recue)} kg</strong>
               </div>
               <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <span style={{ color: C.muted }}>Reste à livrer</span>
+                <span style={{ color: C.muted }}>{t.remaining}</span>
                 <strong style={{ color: C.amber }}>{fmt(showReception.quantite_commandee - showReception.quantite_recue)} kg</strong>
               </div>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
               <div style={s.fg}>
-                <label style={s.label}>Quantité reçue (kg) <span style={s.req}>*</span></label>
+                <label style={s.label}>{t.qtyToReceive} <span style={s.req}>*</span></label>
                 <input style={s.input} type="number" min="0.01" step="0.01"
                   max={showReception.quantite_commandee - showReception.quantite_recue}
                   value={formRec.quantite_recue}
                   onChange={(e) => setFormRec({ ...formRec, quantite_recue: e.target.value })} />
               </div>
               <div style={s.fg}>
-                <label style={s.label}>Date réception <span style={s.req}>*</span></label>
+                <label style={s.label}>{t.receiptDateLabel} <span style={s.req}>*</span></label>
                 <input style={s.input} type="date" value={formRec.date_reception}
                   onChange={(e) => setFormRec({ ...formRec, date_reception: e.target.value })} />
               </div>
               <div style={s.fg}>
-                <label style={s.label}>Commentaire</label>
-                <input style={s.input} placeholder="Observations éventuelles..."
+                <label style={s.label}>{t.comment}</label>
+                <input style={s.input} placeholder={t.observation}
                   value={formRec.commentaire}
                   onChange={(e) => setFormRec({ ...formRec, commentaire: e.target.value })} />
               </div>
             </div>
             <div style={s.modalActions}>
-              <button style={s.btnSecondary} onClick={() => setShowReception(null)}>Annuler</button>
+              <button style={s.btnSecondary} onClick={() => setShowReception(null)}>{t.cancel}</button>
               <button style={s.btnPrimary} onClick={handleReception} disabled={loading}>
-                {loading ? "⏳..." : "✅ Confirmer la réception"}
+                {loading ? t.saving : t.confirmReceipt}
               </button>
             </div>
           </div>
@@ -1173,13 +1415,13 @@ const Approvisionnement = () => {
       {confirmAnnuler && (
         <div style={s.modalOverlay} onClick={() => setConfirmAnnuler(null)}>
           <div style={s.modal} onClick={(e) => e.stopPropagation()}>
-            <h3 style={{ margin: "0 0 1rem", color: C.text }}>Annuler la commande ?</h3>
+            <h3 style={{ margin: "0 0 1rem", color: C.text }}>{t.cancelOrder} ?</h3>
             <p style={{ color: C.muted, margin: "0 0 1.5rem" }}>
-              La commande <strong>{confirmAnnuler.numero}</strong> sera marquée comme annulée.
+              {t.cancelConfirm} <strong>{confirmAnnuler.numero}</strong>.
             </p>
             <div style={s.modalActions}>
-              <button style={s.btnSecondary} onClick={() => setConfirmAnnuler(null)}>Retour</button>
-              <button style={{ ...s.btnPrimary, background: C.red }} onClick={handleAnnuler}>Annuler la commande</button>
+              <button style={s.btnSecondary} onClick={() => setConfirmAnnuler(null)}>{t.back}</button>
+              <button style={{ ...s.btnPrimary, background: C.red }} onClick={handleAnnuler}>{t.cancelOrder}</button>
             </div>
           </div>
         </div>
@@ -1189,13 +1431,13 @@ const Approvisionnement = () => {
       {confirmDelete && (
         <div style={s.modalOverlay} onClick={() => setConfirmDelete(null)}>
           <div style={s.modal} onClick={(e) => e.stopPropagation()}>
-            <h3 style={{ margin: "0 0 1rem", color: C.text }}>Supprimer la commande ?</h3>
+            <h3 style={{ margin: "0 0 1rem", color: C.text }}>{t.deleteOrder} ?</h3>
             <p style={{ color: C.muted, margin: "0 0 1.5rem" }}>
-              La commande <strong>{confirmDelete.numero}</strong> sera supprimée définitivement.
+              {t.deleteConfirm} <strong>{confirmDelete.numero}</strong>.
             </p>
             <div style={s.modalActions}>
-              <button style={s.btnSecondary} onClick={() => setConfirmDelete(null)}>Retour</button>
-              <button style={{ ...s.btnPrimary, background: C.red }} onClick={handleDeleteCmd}>Supprimer</button>
+              <button style={s.btnSecondary} onClick={() => setConfirmDelete(null)}>{t.back}</button>
+              <button style={{ ...s.btnPrimary, background: C.red }} onClick={handleDeleteCmd}>{t.delete}</button>
             </div>
           </div>
         </div>

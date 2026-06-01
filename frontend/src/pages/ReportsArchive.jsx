@@ -6,38 +6,240 @@
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import api from "../api/axios";
+import { useTheme } from "../context/ThemeContext";
+import { useLang } from "../context/LangContext";
 
 /* ─────────────────────────────────────────────────────────────────────────────
-   PALETTE
+   TRADUCTIONS
 ───────────────────────────────────────────────────────────────────────────── */
-const C = {
-  bg:       "#f4f6f9",
-  surface:  "#ffffff",
-  border:   "#e3e8ef",
-  accent:   "#2563eb",
-  accentLt: "#eff4ff",
-  green:    "#16a34a",
-  greenLt:  "#f0fdf4",
-  red:      "#dc2626",
-  redLt:    "#fef2f2",
-  amber:    "#d97706",
-  amberLt:  "#fffbeb",
-  purple:   "#7c3aed",
-  purpleLt: "#f5f3ff",
-  sky:      "#0284c7",
-  skyLt:    "#f0f9ff",
-  orange:   "#ea580c",
-  orangeLt: "#fff7ed",
-  text:     "#111827",
-  sub:      "#374151",
-  muted:    "#6b7280",
-  inputBg:  "#f9fafb",
+const translations = {
+  fr: {
+    // Général
+    loading: "Chargement...",
+    saving: "Enregistrement...",
+    error: "Erreur",
+    success: "Succès",
+    close: "Fermer",
+    cancel: "Annuler",
+    confirm: "Confirmer",
+    delete: "Supprimer",
+    filter: "Filtrer",
+    reset: "Réinitialiser",
+    see: "Voir",
+    previous: "Précédent",
+    next: "Suivant",
+    page: "Page",
+    entries: "entrée(s)",
+    
+    // Topbar
+    appTitle: "ERP — Archive des Rapports MES",
+    appSubtitle: "Rapports reçus automatiquement depuis le système MES",
+    online: "En ligne",
+    syncMES: "Sync MES",
+    
+    // Info box
+    infoTitle: "📊 Rapports MES",
+    infoText: "Les rapports sont envoyés automatiquement par le MES après chaque génération. Ils sont archivés ici dans l'ERP pour consultation et traçabilité. Le payload MES est affiché de façon lisible, avec certains détails techniques masqués selon le type de rapport.",
+    infoHint: "Cliquez sur \"Voir\" pour ouvrir le rapport complet (toutes sections, tableaux, KPIs, étapes, rejets…).",
+    
+    // Report types
+    reportTypes: {
+      daily: "Journalier",
+      weekly: "Hebdomadaire",
+      "production-of": "Production (OF)",
+      maintenance: "Maintenance",
+      performance: "Perf. (OEE)",
+      traceability: "Traçabilité",
+    },
+    
+    // Status
+    status: {
+      archived: "✓ Archivé",
+      processed: "⚡ Traité",
+      error: "✕ Erreur",
+    },
+    
+    // Tabs
+    tabList: "📋 Rapports archivés",
+    tabStats: "📊 Statistiques",
+    
+    // Filters
+    search: "Recherche",
+    searchPlaceholder: "Période, type, source…",
+    reportType: "Type",
+    allTypes: "Tous les types",
+    from: "Du",
+    to: "Au",
+    
+    // Table headers
+    colId: "ID",
+    colType: "Type",
+    colPeriod: "Période",
+    colFrom: "Du",
+    colTo: "Au",
+    colReceived: "Reçu le",
+    colSource: "Source",
+    colStatus: "Statut",
+    colActions: "Actions",
+    
+    // Drawer
+    drawerTitle: "Rapport complet MES",
+    drawerSubtitle: "section(s) dans le payload",
+    metadata: "Métadonnées du rapport",
+    receivedAt: "Reçu le",
+    source: "Source",
+    attachments: "Fichiers joints MES",
+    downloadPDF: "Télécharger PDF",
+    downloadExcel: "Télécharger Excel",
+    emptyPayload: "Payload vide — aucune donnée MES.",
+    
+    // Stats
+    statsTitle: "Statistiques par type de rapport",
+    statsSubtitle: "Nombre de rapports archivés reçus depuis le MES",
+    totalArchived: "Total archivé",
+    ofTotal: "du total",
+    rapport: "rapport",
+    rapports: "rapports",
+    
+    // Messages
+    errorLoadReports: "Impossible de charger les rapports archivés.",
+    errorLoadDetail: "Impossible de charger le détail.",
+    errorLoadStats: "Impossible de charger les statistiques.",
+    noReports: "Aucun rapport archivé",
+    noReportsHint: "Les rapports apparaîtront ici dès que le MES en enverra.",
+    noStats: "Chargement…",
+  },
+  en: {
+    // General
+    loading: "Loading...",
+    saving: "Saving...",
+    error: "Error",
+    success: "Success",
+    close: "Close",
+    cancel: "Cancel",
+    confirm: "Confirm",
+    delete: "Delete",
+    filter: "Filter",
+    reset: "Reset",
+    see: "View",
+    previous: "Previous",
+    next: "Next",
+    page: "Page",
+    entries: "entry(s)",
+    
+    // Topbar
+    appTitle: "ERP — MES Reports Archive",
+    appSubtitle: "Reports automatically received from MES system",
+    online: "Online",
+    syncMES: "MES Sync",
+    
+    // Info box
+    infoTitle: "📊 MES Reports",
+    infoText: "Reports are automatically sent by MES after each generation. They are archived here in the ERP for consultation and traceability. The MES payload is displayed in a readable format, with some technical details hidden depending on the report type.",
+    infoHint: "Click \"View\" to open the complete report (all sections, tables, KPIs, steps, rejects…).",
+    
+    // Report types
+    reportTypes: {
+      daily: "Daily",
+      weekly: "Weekly",
+      "production-of": "Production (MO)",
+      maintenance: "Maintenance",
+      performance: "Performance (OEE)",
+      traceability: "Traceability",
+    },
+    
+    // Status
+    status: {
+      archived: "✓ Archived",
+      processed: "⚡ Processed",
+      error: "✕ Error",
+    },
+    
+    // Tabs
+    tabList: "📋 Archived Reports",
+    tabStats: "📊 Statistics",
+    
+    // Filters
+    search: "Search",
+    searchPlaceholder: "Period, type, source…",
+    reportType: "Type",
+    allTypes: "All types",
+    from: "From",
+    to: "To",
+    
+    // Table headers
+    colId: "ID",
+    colType: "Type",
+    colPeriod: "Period",
+    colFrom: "From",
+    colTo: "To",
+    colReceived: "Received",
+    colSource: "Source",
+    colStatus: "Status",
+    colActions: "Actions",
+    
+    // Drawer
+    drawerTitle: "Complete MES Report",
+    drawerSubtitle: "section(s) in payload",
+    metadata: "Report Metadata",
+    receivedAt: "Received",
+    source: "Source",
+    attachments: "MES Attachments",
+    downloadPDF: "Download PDF",
+    downloadExcel: "Download Excel",
+    emptyPayload: "Empty payload — no MES data.",
+    
+    // Stats
+    statsTitle: "Statistics by report type",
+    statsSubtitle: "Number of archived reports received from MES",
+    totalArchived: "Total archived",
+    ofTotal: "of total",
+    rapport: "report",
+    rapports: "reports",
+    
+    // Messages
+    errorLoadReports: "Unable to load archived reports.",
+    errorLoadDetail: "Unable to load details.",
+    errorLoadStats: "Unable to load statistics.",
+    noReports: "No archived reports",
+    noReportsHint: "Reports will appear here as soon as MES sends them.",
+    noStats: "Loading…",
+  },
 };
 
 /* ─────────────────────────────────────────────────────────────────────────────
-   STYLES
+   PALETTE FACTORY (dark / light)
 ───────────────────────────────────────────────────────────────────────────── */
-const s = {
+const makeC = (isDark) => ({
+  bg:       isDark ? "#0f172a" : "#f4f6f9",
+  surface:  isDark ? "#1e293b" : "#ffffff",
+  border:   isDark ? "#334155" : "#e3e8ef",
+  accent:   "#2563eb",
+  accentLt: isDark ? "#1e3a5f" : "#eff4ff",
+  green:    "#16a34a",
+  greenLt:  isDark ? "#14532d" : "#f0fdf4",
+  red:      "#dc2626",
+  redLt:    isDark ? "#7f1d1d" : "#fef2f2",
+  amber:    "#d97706",
+  amberLt:  isDark ? "#78350f" : "#fffbeb",
+  purple:   "#7c3aed",
+  purpleLt: isDark ? "#3b0764" : "#f5f3ff",
+  sky:      "#0284c7",
+  skyLt:    isDark ? "#082f49" : "#f0f9ff",
+  orange:   "#ea580c",
+  orangeLt: isDark ? "#7c2d12" : "#fff7ed",
+  text:     isDark ? "#f1f5f9" : "#111827",
+  sub:      isDark ? "#cbd5e1" : "#374151",
+  muted:    isDark ? "#94a3b8" : "#6b7280",
+  inputBg:  isDark ? "#0f172a" : "#f9fafb",
+  trOdd:    isDark ? "#1e293b" : "#ffffff",
+  trEven:   isDark ? "#162032" : "#f4f6f9",
+});
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   STYLES FACTORY (dynamique avec thème)
+───────────────────────────────────────────────────────────────────────────── */
+const makeS = (C) => ({
   app: { fontFamily: "'IBM Plex Sans','Segoe UI',sans-serif", background: C.bg, minHeight: "100vh", color: C.text },
   topbar: {
     background: C.surface, borderBottom: `1px solid ${C.border}`,
@@ -141,7 +343,7 @@ const s = {
     color: C.muted, fontWeight: 600, fontSize: "0.72rem",
     letterSpacing: "0.05em", textTransform: "uppercase",
   },
-  tr: (i) => ({ background: i % 2 === 0 ? "#fff" : C.bg }),
+  tr: (i) => ({ background: i % 2 === 0 ? C.trOdd : C.trEven }),
   td: { padding: "0.75rem 0.9rem", borderBottom: `1px solid ${C.border}`, color: C.sub, verticalAlign: "middle" },
 
   pill: (bg, color, border) => ({
@@ -159,7 +361,7 @@ const s = {
     background: C.accentLt, border: "1px solid #bfdbfe",
     borderLeft: `3px solid ${C.accent}`, borderRadius: 8,
     padding: "0.75rem 1rem", marginBottom: "1.25rem",
-    fontSize: "0.85rem", color: "#1d4ed8", lineHeight: 1.5,
+    fontSize: "0.85rem", color: C.accent, lineHeight: 1.5,
   },
   emptyState: {
     textAlign: "center", padding: "3rem", color: C.muted,
@@ -184,26 +386,25 @@ const s = {
   metaCard:  { background: C.surface, border: `1px solid ${C.border}`, borderRadius: 8, padding: "0.75rem 1rem" },
   metaLabel: { margin: "0 0 3px", fontSize: "0.68rem", fontWeight: 600, color: C.muted, textTransform: "uppercase", letterSpacing: "0.05em" },
   metaVal:   { margin: 0, fontSize: "0.9rem", fontWeight: 600, color: C.text },
-};
+});
 
 /* ─────────────────────────────────────────────────────────────────────────────
-   CONSTANTES
+   CONSTANTES (dynamiques avec le thème)
 ───────────────────────────────────────────────────────────────────────────── */
-const REPORT_TYPES = [
-  { value: "daily",         label: "Journalier",      icon: "📅", color: C.accent,  lt: C.accentLt  },
-  { value: "weekly",        label: "Hebdomadaire",    icon: "📊", color: C.green,   lt: C.greenLt   },
-  { value: "production-of", label: "Production (OF)", icon: "📦", color: C.orange,  lt: C.orangeLt  },
-  { value: "maintenance",   label: "Maintenance",     icon: "🔧", color: C.amber,   lt: C.amberLt   },
-  { value: "performance",   label: "Perf. (OEE)",     icon: "⚡", color: C.purple,  lt: C.purpleLt  },
-  { value: "traceability",  label: "Traçabilité",     icon: "🔍", color: C.sky,     lt: C.skyLt     },
+const getReportTypes = (C, t) => [
+  { value: "daily",         label: t.reportTypes.daily,      icon: "📅", color: C.accent,  lt: C.accentLt  },
+  { value: "weekly",        label: t.reportTypes.weekly,     icon: "📊", color: C.green,   lt: C.greenLt   },
+  { value: "production-of", label: t.reportTypes["production-of"], icon: "📦", color: C.orange,  lt: C.orangeLt  },
+  { value: "maintenance",   label: t.reportTypes.maintenance,icon: "🔧", color: C.amber,   lt: C.amberLt   },
+  { value: "performance",   label: t.reportTypes.performance,icon: "⚡", color: C.purple,  lt: C.purpleLt  },
+  { value: "traceability",  label: t.reportTypes.traceability,icon: "🔍", color: C.sky,     lt: C.skyLt     },
 ];
-const TYPE_MAP = Object.fromEntries(REPORT_TYPES.map(t => [t.value, t]));
 
-const STATUS_CFG = {
-  archived:  { bg: C.greenLt,  color: C.green,  border: "#bbf7d0", label: "✓ Archivé"  },
-  processed: { bg: C.accentLt, color: C.accent, border: "#bfdbfe", label: "⚡ Traité"  },
-  error:     { bg: C.redLt,    color: C.red,    border: "#fecaca", label: "✕ Erreur"   },
-};
+const getStatusCfg = (C, t) => ({
+  archived:  { bg: C.greenLt,  color: C.green,  border: "#bbf7d0", label: t.status.archived  },
+  processed: { bg: C.accentLt, color: C.accent, border: "#bfdbfe", label: t.status.processed  },
+  error:     { bg: C.redLt,    color: C.red,    border: "#fecaca", label: t.status.error     },
+});
 
 /* ─────────────────────────────────────────────────────────────────────────────
    UTILITAIRES DATE
@@ -294,13 +495,13 @@ const downloadJSON = (data, filename) => {
 /* ─────────────────────────────────────────────────────────────────────────────
    EXPORT CSV — payload complet aplati
 ───────────────────────────────────────────────────────────────────────────── */
-const downloadCSV = (report, t) => {
+const downloadCSV = (report, t, reportTypeLabel) => {
   const flatPayload = flattenJSON(getReportPayload(report));
   const rows = [
     ["Champ", "Valeur"],
     ["--- Métadonnées rapport ---", ""],
     ["ID", `#${report.id}`],
-    ["Type", t.label],
+    ["Type", reportTypeLabel],
     ["Période", report.period_label],
     ["Du", dateOnly(report.date_from)],
     ["Au", dateOnly(report.date_to)],
@@ -346,9 +547,8 @@ const downloadServerFile = async (reportId, fileType) => {
 
 /* ─────────────────────────────────────────────────────────────────────────────
    GÉNÉRATEUR DE RAPPORT HTML COMPLET (style PDF industriel)
-   Rend la totalité du payload MES section par section.
 ───────────────────────────────────────────────────────────────────────────── */
-const buildReportHTML = (report, t) => {
+const buildReportHTML = (report, t, reportType) => {
   const payload = getReportPayload(report);
 
   /* Rendu HTML récursif d'une valeur quelconque */
@@ -379,10 +579,10 @@ const buildReportHTML = (report, t) => {
         <div class="table-title">${fmtKey(key)} <span class="badge">${value.length}</span></div>
         <div style="overflow-x:auto">
           <table>
-            <thead><tr>${cols.map(c => `<th>${fmtKey(c)}</th>`).join("")}</tr></thead>
+            <thead><tr>${cols.map(c => `<th>${fmtKey(c)}</th>`).join("")}</thead>
             <tbody>${value.map((row, i) =>
               `<tr class="${i % 2 === 0 ? "" : "alt"}">${cols.map(c =>
-                `<td>${fmtVal(row[c])}</td>`).join("")}</tr>`
+                `<td>${fmtVal(row[c])}</td>`).join("")}`
             ).join("")}</tbody>
           </table>
         </div>
@@ -450,7 +650,7 @@ const buildReportHTML = (report, t) => {
 <html lang="fr">
 <head>
 <meta charset="utf-8"/>
-<title>Rapport ${t.label} #${report.id} — ${report.period_label}</title>
+<title>Rapport ${reportType.label} #${report.id} — ${report.period_label}</title>
 <style>
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
   body{font-family:'Segoe UI','Arial',sans-serif;font-size:10.5pt;color:#111827;background:#fff;padding:15mm 12mm}
@@ -511,7 +711,7 @@ const buildReportHTML = (report, t) => {
 </head>
 <body>
   <div class="report-header">
-    <div class="report-title">${t.icon} ${t.label} — ${report.period_label}</div>
+    <div class="report-title">${reportType.icon} ${reportType.label} — ${report.period_label}</div>
     <div class="report-subtitle">Rapport #${report.id} · Système ERP ↔ MES · Rapport industriel complet</div>
     <div class="report-meta">
       <span class="meta-item">Période : <strong>${dateOnly(report.date_from)} → ${dateOnly(report.date_to)}</strong></span>
@@ -531,8 +731,8 @@ const buildReportHTML = (report, t) => {
 </html>`;
 };
 
-const printReport = (report, t) => {
-  const html = buildReportHTML(report, t);
+const printReport = (report, t, reportType) => {
+  const html = buildReportHTML(report, t, reportType);
   const win = window.open("", "_blank", "width=1050,height=750");
   if (!win) return;
   win.document.write(html);
@@ -546,7 +746,7 @@ const printReport = (report, t) => {
 ───────────────────────────────────────────────────────────────────────────── */
 
 /** Carte scalaire (label + valeur). */
-const ScalarCard = ({ label, value }) => (
+const ScalarCard = ({ label, value, C, s }) => (
   <div style={s.metaCard}>
     <p style={s.metaLabel}>{fmtKey(label)}</p>
     <p style={s.metaVal}>{fmtVal(value)}</p>
@@ -554,7 +754,7 @@ const ScalarCard = ({ label, value }) => (
 );
 
 /** Tableau d'objets ou de primitives. */
-const ArrayTable = ({ data, label }) => {
+const ArrayTable = ({ data, label, C, s }) => {
   if (!data || data.length === 0) return null;
 
   /* Primitives */
@@ -608,22 +808,18 @@ const ArrayTable = ({ data, label }) => {
 
 /**
  * Rendu récursif d'une section du payload.
- * - scalaire → ScalarCard
- * - tableau  → ArrayTable
- * - objet tout-scalaire → grille de ScalarCard
- * - objet mixte → sous-sections imbriquées
  */
-const PayloadSection = ({ label, data, depth = 0 }) => {
+const PayloadSection = ({ label, data, depth = 0, C, s }) => {
   if (data === null || data === undefined) return null;
 
   /* Scalaire */
   if (typeof data !== "object") {
-    return <ScalarCard label={label} value={data} />;
+    return <ScalarCard label={label} value={data} C={C} s={s} />;
   }
 
   /* Tableau */
   if (Array.isArray(data)) {
-    return <ArrayTable data={data} label={label} />;
+    return <ArrayTable data={data} label={label} C={C} s={s} />;
   }
 
   const entries = Object.entries(data);
@@ -647,7 +843,7 @@ const PayloadSection = ({ label, data, depth = 0 }) => {
           </p>
         )}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(140px,1fr))", gap: "0.5rem" }}>
-          {entries.map(([k, v]) => <ScalarCard key={k} label={k} value={v} />)}
+          {entries.map(([k, v]) => <ScalarCard key={k} label={k} value={v} C={C} s={s} />)}
         </div>
       </div>
     );
@@ -675,7 +871,7 @@ const PayloadSection = ({ label, data, depth = 0 }) => {
       {/* Scalaires en grid */}
       {scalars.length > 0 && (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(140px,1fr))", gap: "0.5rem", marginBottom: "0.75rem" }}>
-          {scalars.map(([k, v]) => <ScalarCard key={k} label={k} value={v} />)}
+          {scalars.map(([k, v]) => <ScalarCard key={k} label={k} value={v} C={C} s={s} />)}
         </div>
       )}
 
@@ -688,7 +884,7 @@ const PayloadSection = ({ label, data, depth = 0 }) => {
           padding: "0.75rem 1rem",
           marginBottom: "0.65rem",
         }}>
-          <PayloadSection label={k} data={v} depth={depth + 1} />
+          <PayloadSection label={k} data={v} depth={depth + 1} C={C} s={s} />
         </div>
       ))}
     </div>
@@ -698,9 +894,10 @@ const PayloadSection = ({ label, data, depth = 0 }) => {
 /* ─────────────────────────────────────────────────────────────────────────────
    DRAWER DÉTAIL — PAYLOAD COMPLET
 ───────────────────────────────────────────────────────────────────────────── */
-const DetailDrawer = ({ report, onClose }) => {
-  const t        = TYPE_MAP[report.report_type] || REPORT_TYPES[0];
-  const payload  = getReportPayload(report);
+const DetailDrawer = ({ report, onClose, C, s, t }) => {
+  const REPORT_TYPES = getReportTypes(C, t);
+  const reportType = REPORT_TYPES.find(rt => rt.value === report.report_type) || REPORT_TYPES[0];
+  const payload = getReportPayload(report);
   const sections = Object.entries(payload);
 
   const btnExport = {
@@ -710,30 +907,28 @@ const DetailDrawer = ({ report, onClose }) => {
   return (
     <>
       <div style={s.backdrop} onClick={onClose} />
-      {/* stopPropagation prevents clicks inside the drawer from bubbling to the backdrop */}
       <div style={s.drawer} onClick={e => e.stopPropagation()}>
 
         {/* En-tête du drawer */}
         <div style={s.drawerHeader}>
-          <div style={{ ...s.kpiIcon(t.lt), width: 38, height: 38, flexShrink: 0 }}>{t.icon}</div>
+          <div style={{ ...s.kpiIcon(reportType.lt), width: 38, height: 38, flexShrink: 0 }}>{reportType.icon}</div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <p style={{ margin: 0, fontSize: "0.95rem", fontWeight: 700, color: C.text }}>
-              {t.label} — {report.period_label}
+              {reportType.label} — {report.period_label}
             </p>
             <p style={{ margin: 0, fontSize: "0.75rem", color: C.muted }}>
-              ID #{report.id} · reçu {dateShort(report.received_at)} · {sections.length} section(s) dans le payload
+              ID #{report.id} · {t.receivedAt} {dateShort(report.received_at)} · {sections.length} {t.drawerSubtitle}
             </p>
           </div>
 
           {/* Boutons export */}
           <div style={{ display: "flex", gap: "0.35rem", alignItems: "center", flexWrap: "wrap" }}>
-            <button style={btnExport} onClick={() => printReport(report, t)}>
+            <button style={btnExport} onClick={() => printReport(report, t, reportType)}>
               📄 PDF
             </button>
-            <button style={btnExport} onClick={() => downloadCSV(report, t)}>
+            <button style={btnExport} onClick={() => downloadCSV(report, t, reportType.label)}>
               📊 Excel
             </button>
-
             <button onClick={onClose} style={{ ...btnExport, padding: "0.4rem 0.65rem" }}>✕</button>
           </div>
         </div>
@@ -746,10 +941,10 @@ const DetailDrawer = ({ report, onClose }) => {
             background: C.surface, border: `1px solid ${C.border}`,
             borderRadius: 8, padding: "0.85rem 1rem",
           }}>
-            <p style={{ ...s.metaLabel, marginBottom: "0.6rem" }}>Métadonnées du rapport</p>
+            <p style={{ ...s.metaLabel, marginBottom: "0.6rem" }}>{t.metadata}</p>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(155px,1fr))", gap: "0.5rem" }}>
               {[
-                ["Type", t.label],
+                ["Type", reportType.label],
                 ["Période", report.period_label],
                 ["Du", dateOnly(report.date_from)],
                 ["Au", dateOnly(report.date_to)],
@@ -769,28 +964,28 @@ const DetailDrawer = ({ report, onClose }) => {
           {sections.length === 0 ? (
             <div style={s.emptyState}>
               <div style={s.emptyIcon}>📭</div>
-              <p>Payload vide — aucune donnée MES.</p>
+              <p>{t.emptyPayload}</p>
             </div>
           ) : sections.map(([sectionKey, sectionData]) => (
             <div key={sectionKey} style={{
               background: C.surface, border: `1px solid ${C.border}`,
               borderRadius: 8, padding: "1rem 1.1rem",
             }}>
-              <PayloadSection label={sectionKey} data={sectionData} depth={0} />
+              <PayloadSection label={sectionKey} data={sectionData} depth={0} C={C} s={s} />
             </div>
           ))}
 
           {/* Fichiers joints reçus depuis le MES */}
           {(report.pdf_path || report.excel_path) && (
             <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 8, padding: "1rem" }}>
-              <p style={{ ...s.metaLabel, marginBottom: "0.75rem" }}>Fichiers joints MES</p>
+              <p style={{ ...s.metaLabel, marginBottom: "0.75rem" }}>{t.attachments}</p>
               <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
                 {report.pdf_path && (
                   <button
                     style={{ ...s.btnGhost, color: C.red, border: `1px solid #fecaca`, background: C.redLt }}
                     onClick={() => downloadServerFile(report.id, "pdf")}
                   >
-                    📄 Télécharger PDF
+                    📄 {t.downloadPDF}
                   </button>
                 )}
                 {report.excel_path && (
@@ -798,7 +993,7 @@ const DetailDrawer = ({ report, onClose }) => {
                     style={{ ...s.btnGhost, color: C.green, border: `1px solid #bbf7d0`, background: C.greenLt }}
                     onClick={() => downloadServerFile(report.id, "excel")}
                   >
-                    📊 Télécharger Excel
+                    📊 {t.downloadExcel}
                   </button>
                 )}
               </div>
@@ -814,6 +1009,16 @@ const DetailDrawer = ({ report, onClose }) => {
    PAGE PRINCIPALE
 ───────────────────────────────────────────────────────────────────────────── */
 const ReportsArchive = () => {
+  const { isDark } = useTheme();
+  const { lang } = useLang();
+  const t = translations[lang] || translations.fr;
+
+  const C = makeC(isDark);
+  const s = makeS(C);
+  const REPORT_TYPES = getReportTypes(C, t);
+  const STATUS_CFG = getStatusCfg(C, t);
+  const TYPE_MAP = Object.fromEntries(REPORT_TYPES.map(rt => [rt.value, rt]));
+
   const [tab,           setTab]          = useState("liste");
   const [reports,       setReports]      = useState([]);
   const [stats,         setStats]        = useState(null);
@@ -829,13 +1034,12 @@ const ReportsArchive = () => {
   const LIMIT = 50;
 
   // ── Refs for lifecycle management ────────────────────────────────────────────
-  const mountedRef     = useRef(true);   // guards setState after unmount
-  const msgTimerRef    = useRef(null);   // showMsg setTimeout handle
-  const statsAbortRef  = useRef(null);   // AbortController for loadStats
-  const reportsAbortRef = useRef(null);  // AbortController for loadReports
-  const detailAbortRef = useRef(null);   // AbortController for loadDetail
+  const mountedRef     = useRef(true);
+  const msgTimerRef    = useRef(null);
+  const statsAbortRef  = useRef(null);
+  const reportsAbortRef = useRef(null);
+  const detailAbortRef = useRef(null);
 
-  // Cleanup everything on unmount (also runs on StrictMode's intentional unmount)
   useEffect(() => {
     mountedRef.current = true;
     return () => {
@@ -847,7 +1051,6 @@ const ReportsArchive = () => {
     };
   }, []);
 
-  // ── showMsg — stable reference, clears its own timer, guards unmounted calls ─
   const showMsg = useCallback((text, type = "success") => {
     if (!mountedRef.current) return;
     if (msgTimerRef.current) clearTimeout(msgTimerRef.current);
@@ -855,9 +1058,8 @@ const ReportsArchive = () => {
     msgTimerRef.current = setTimeout(() => {
       if (mountedRef.current) setMsg({ text: "", type: "" });
     }, 4000);
-  }, []); // stable: depends only on refs and stable setters
+  }, []);
 
-  // ── loadStats — cancels previous in-flight call ───────────────────────────
   const loadStats = useCallback(async () => {
     statsAbortRef.current?.abort();
     const ctrl = new AbortController();
@@ -869,11 +1071,9 @@ const ReportsArchive = () => {
       if (e.code === "ERR_CANCELED" || e.name === "AbortError" || e.name === "CanceledError") return;
       console.error("[ERP] stats error:", e.response?.status, e.response?.data || e.message);
     }
-  }, []); // stable
+  }, []);
 
-  // ── loadReports — cancels previous call, guards loading flag ─────────────
   const loadReports = useCallback(async () => {
-    // Cancel any still-running previous call (covers StrictMode double-invoke)
     reportsAbortRef.current?.abort();
     const ctrl = new AbortController();
     reportsAbortRef.current = ctrl;
@@ -890,14 +1090,12 @@ const ReportsArchive = () => {
       if (mountedRef.current && !ctrl.signal.aborted) setReports(r.data);
     } catch (e) {
       if (e.code === "ERR_CANCELED" || e.name === "AbortError" || e.name === "CanceledError") return;
-      showMsg("❌ " + (e.response?.data?.detail || "Impossible de charger les rapports archivés."), "error");
+      showMsg("❌ " + (e.response?.data?.detail || t.errorLoadReports), "error");
     } finally {
-      // Only clear loading if this request was not superseded by a newer one
       if (mountedRef.current && !ctrl.signal.aborted) setLoading(false);
     }
-  }, [filterType, dateFrom, dateTo, page, showMsg]);
+  }, [filterType, dateFrom, dateTo, page, showMsg, t]);
 
-  // ── loadDetail — cancels previous call, adds its own loading flag ─────────
   const loadDetail = useCallback(async (id) => {
     detailAbortRef.current?.abort();
     const ctrl = new AbortController();
@@ -909,13 +1107,12 @@ const ReportsArchive = () => {
       if (mountedRef.current && !ctrl.signal.aborted) setSelected(r.data);
     } catch (e) {
       if (e.code === "ERR_CANCELED" || e.name === "AbortError" || e.name === "CanceledError") return;
-      showMsg("❌ " + (e.response?.data?.detail || "Impossible de charger le détail."), "error");
+      showMsg("❌ " + (e.response?.data?.detail || t.errorLoadDetail), "error");
     } finally {
       if (mountedRef.current && !ctrl.signal.aborted) setLoadingDetail(false);
     }
-  }, [showMsg]);
+  }, [showMsg, t]);
 
-  // ── Effects — each depends only on its stable callback ───────────────────
   useEffect(() => { loadStats(); }, [loadStats]);
   useEffect(() => { loadReports(); }, [loadReports]);
 
@@ -928,8 +1125,8 @@ const ReportsArchive = () => {
     : reports;
 
   const tabs = [
-    { id: "liste", label: "📋 Rapports archivés" },
-    { id: "stats", label: "📊 Statistiques"       },
+    { id: "liste", label: t.tabList },
+    { id: "stats", label: t.tabStats },
   ];
 
   return (
@@ -940,16 +1137,13 @@ const ReportsArchive = () => {
         <div style={s.logoRow}>
           <div style={s.logo}>R</div>
           <div>
-            <p style={s.h1}>ERP — Archive des Rapports MES</p>
-            <p style={s.h1sub}>Rapports reçus automatiquement depuis le système MES</p>
+            <p style={s.h1}>{t.appTitle}</p>
+            <p style={s.h1sub}>{t.appSubtitle}</p>
           </div>
         </div>
         <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
-          <span style={s.badgeOnline}><span style={s.dot} />En ligne</span>
-          <span style={s.badgeSync}>Sync MES</span>
-          <button style={s.btnGhost} onClick={() => { loadReports(); loadStats(); }}>
-            🔄 Actualiser
-          </button>
+          <span style={s.badgeOnline}><span style={s.dot} />{t.online}</span>
+          <span style={s.badgeSync}>{t.syncMES}</span>
         </div>
       </div>
 
@@ -968,34 +1162,32 @@ const ReportsArchive = () => {
 
         {/* INFO */}
         <div style={s.infoBox}>
-          📊 Les rapports sont envoyés <strong>automatiquement</strong> par le MES après chaque génération.
-          Ils sont archivés ici dans l'ERP pour consultation et traçabilité.
-          Le payload MES est affiché de façon lisible, avec certains détails techniques masqués selon le type de rapport.
+          {t.infoTitle} : {t.infoText}
           <br />
           <span style={{ fontSize: "0.75rem", opacity: 0.8 }}>
-            Cliquez sur "Voir" pour ouvrir le rapport complet (toutes sections, tableaux, KPIs, étapes, rejets…).
+            {t.infoHint}
           </span>
         </div>
 
         {/* KPI STATS — cliquables pour filtrer */}
         <div style={s.kpiRow}>
-          {REPORT_TYPES.map(t => {
-            const count  = stats?.[t.value] ?? 0;
-            const active = filterType === t.value;
+          {REPORT_TYPES.map(rt => {
+            const count  = stats?.[rt.value] ?? 0;
+            const active = filterType === rt.value;
             return (
               <div
-                key={t.value}
+                key={rt.value}
                 style={{
                   ...s.kpiCard,
-                  border:    active ? `2px solid ${t.color}` : `1px solid ${C.border}`,
-                  boxShadow: active ? `0 0 0 3px ${t.color}22` : "0 1px 3px rgba(0,0,0,0.04)",
+                  border:    active ? `2px solid ${rt.color}` : `1px solid ${C.border}`,
+                  boxShadow: active ? `0 0 0 3px ${rt.color}22` : "0 1px 3px rgba(0,0,0,0.04)",
                 }}
-                onClick={() => { setFilterType(active ? "" : t.value); setPage(0); }}
+                onClick={() => { setFilterType(active ? "" : rt.value); setPage(0); }}
               >
-                <div style={s.kpiIcon(t.lt)}>{t.icon}</div>
+                <div style={s.kpiIcon(rt.lt)}>{rt.icon}</div>
                 <div>
-                  <p style={s.kpiLabel}>{t.label}</p>
-                  <p style={s.kpiVal(active ? t.color : C.text)}>{stats ? count : "…"}</p>
+                  <p style={s.kpiLabel}>{rt.label}</p>
+                  <p style={s.kpiVal(active ? rt.color : C.text)}>{stats ? count : "…"}</p>
                 </div>
               </div>
             );
@@ -1004,9 +1196,9 @@ const ReportsArchive = () => {
 
         {/* TABS */}
         <div style={s.tabRow}>
-          {tabs.map(t => (
-            <button key={t.id} style={s.tab(tab === t.id)} onClick={() => setTab(t.id)}>
-              {t.label}
+          {tabs.map(tabItem => (
+            <button key={tabItem.id} style={s.tab(tab === tabItem.id)} onClick={() => setTab(tabItem.id)}>
+              {tabItem.label}
             </button>
           ))}
         </div>
@@ -1016,8 +1208,8 @@ const ReportsArchive = () => {
           <div style={s.section}>
             <div style={s.sectionHeader}>
               <div>
-                <p style={s.sectionTitle}>Rapports archivés</p>
-                <p style={s.sectionSub}>{displayed.length} rapport(s) affiché(s)</p>
+                <p style={s.sectionTitle}>{t.tabList}</p>
+                <p style={s.sectionSub}>{displayed.length} {t.entries}</p>
               </div>
               {filterType && (
                 <span style={s.pill(TYPE_MAP[filterType]?.lt, TYPE_MAP[filterType]?.color, `${TYPE_MAP[filterType]?.color}44`)}>
@@ -1033,39 +1225,39 @@ const ReportsArchive = () => {
             {/* Filtres */}
             <div style={s.filterRow}>
               <div style={s.fg}>
-                <label style={s.label}>Recherche</label>
+                <label style={s.label}>{t.search}</label>
                 <input style={{ ...s.input, width: 220 }}
-                  placeholder="Période, type, source…"
+                  placeholder={t.searchPlaceholder}
                   value={search} onChange={e => setSearch(e.target.value)} />
               </div>
               <div style={s.fg}>
-                <label style={s.label}>Type</label>
+                <label style={s.label}>{t.reportType}</label>
                 <select style={{ ...s.select, width: 180 }} value={filterType}
                   onChange={e => { setFilterType(e.target.value); setPage(0); }}>
-                  <option value="">Tous les types</option>
-                  {REPORT_TYPES.map(t => (
-                    <option key={t.value} value={t.value}>{t.icon} {t.label}</option>
+                  <option value="">{t.allTypes}</option>
+                  {REPORT_TYPES.map(rt => (
+                    <option key={rt.value} value={rt.value}>{rt.icon} {rt.label}</option>
                   ))}
                 </select>
               </div>
               <div style={s.fg}>
-                <label style={s.label}>Du</label>
+                <label style={s.label}>{t.from}</label>
                 <input style={s.input} type="date" value={dateFrom}
                   onChange={e => { setDateFrom(e.target.value); setPage(0); }} />
               </div>
               <div style={s.fg}>
-                <label style={s.label}>Au</label>
+                <label style={s.label}>{t.to}</label>
                 <input style={s.input} type="date" value={dateTo}
                   onChange={e => { setDateTo(e.target.value); setPage(0); }} />
               </div>
               <button style={s.btnPrimary} onClick={() => { loadReports(); loadStats(); }}>
-                🔍 Filtrer
+                🔍 {t.filter}
               </button>
               <button style={s.btnGhost} onClick={() => {
                 setFilterType(""); setDateFrom(thirtyAgo());
                 setDateTo(todayISO()); setSearch(""); setPage(0);
               }}>
-                ↺ Réinitialiser
+                ↺ {t.reset}
               </button>
             </div>
 
@@ -1073,14 +1265,14 @@ const ReportsArchive = () => {
             {loading ? (
               <div style={s.emptyState}>
                 <div style={s.emptyIcon}>⏳</div>
-                <p style={{ fontWeight: 500, color: C.sub }}>Chargement…</p>
+                <p style={{ fontWeight: 500, color: C.sub }}>{t.loading}</p>
               </div>
             ) : displayed.length === 0 ? (
               <div style={s.emptyState}>
                 <div style={s.emptyIcon}>📭</div>
-                <p style={{ fontWeight: 500, color: C.sub }}>Aucun rapport archivé</p>
+                <p style={{ fontWeight: 500, color: C.sub }}>{t.noReports}</p>
                 <p style={{ fontSize: "0.85rem" }}>
-                  Les rapports apparaîtront ici dès que le MES en enverra.
+                  {t.noReportsHint}
                 </p>
               </div>
             ) : (
@@ -1088,14 +1280,14 @@ const ReportsArchive = () => {
                 <table style={s.table}>
                   <thead style={s.thead}>
                     <tr>
-                      {["ID", "Type", "Période", "Du", "Au", "Reçu le", "Source", "Statut", "Actions"].map(h => (
+                      {[t.colId, t.colType, t.colPeriod, t.colFrom, t.colTo, t.colReceived, t.colSource, t.colStatus, t.colActions].map(h => (
                         <th key={h} style={s.th}>{h}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
                     {displayed.map((r, i) => {
-                      const t  = TYPE_MAP[r.report_type] || REPORT_TYPES[0];
+                      const rt = TYPE_MAP[r.report_type] || REPORT_TYPES[0];
                       const sc = STATUS_CFG[r.status]    || STATUS_CFG.archived;
                       return (
                         <tr key={r.id} style={s.tr(i)}>
@@ -1105,8 +1297,8 @@ const ReportsArchive = () => {
                             </code>
                           </td>
                           <td style={s.td}>
-                            <span style={s.pill(t.lt, t.color, `${t.color}44`)}>
-                              {t.icon} {t.label}
+                            <span style={s.pill(rt.lt, rt.color, `${rt.color}44`)}>
+                              {rt.icon} {rt.label}
                             </span>
                           </td>
                           <td style={{ ...s.td, fontWeight: 600, color: C.text }}>{r.period_label}</td>
@@ -1116,7 +1308,7 @@ const ReportsArchive = () => {
                             <span style={{ fontSize: "0.82rem" }}>{dateShort(r.received_at)}</span>
                             <br />
                             <span style={{ fontSize: "0.72rem", color: C.muted }}>{timeAgo(r.received_at)}</span>
-                          </td>
+                           </td>
                           <td style={s.td}>
                             <span style={s.pill(
                               (r.sent_by || "").includes("MES") ? C.purpleLt : C.accentLt,
@@ -1125,20 +1317,20 @@ const ReportsArchive = () => {
                             )}>
                               {r.sent_by || "MES"}
                             </span>
-                          </td>
+                           </td>
                           <td style={s.td}>
                             <span style={s.pill(sc.bg, sc.color, sc.border)}>{sc.label}</span>
-                          </td>
+                           </td>
                           <td style={s.td}>
                             <button
                               style={{ ...s.btnGhost, opacity: loadingDetail ? 0.6 : 1 }}
                               disabled={loadingDetail}
                               onClick={() => loadDetail(r.id)}
                             >
-                              {loadingDetail ? "⏳" : "👁"} Voir
+                              {loadingDetail ? "⏳" : "👁"} {t.see}
                             </button>
-                          </td>
-                        </tr>
+                           </td>
+                         </tr>
                       );
                     })}
                   </tbody>
@@ -1150,14 +1342,14 @@ const ReportsArchive = () => {
             {!loading && reports.length > 0 && (
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "1rem", paddingTop: "0.75rem", borderTop: `1px solid ${C.border}` }}>
                 <span style={{ fontSize: "0.8rem", color: C.muted }}>
-                  Page {page + 1} · {displayed.length} entrée(s)
+                  {t.page} {page + 1} · {displayed.length} {t.entries}
                 </span>
                 <div style={{ display: "flex", gap: "0.5rem" }}>
                   <button style={s.btnGhost} onClick={() => setPage(p => Math.max(0, p - 1))} disabled={page === 0}>
-                    ← Précédent
+                    ← {t.previous}
                   </button>
                   <button style={s.btnGhost} onClick={() => setPage(p => p + 1)} disabled={reports.length < LIMIT}>
-                    Suivant →
+                    {t.next} →
                   </button>
                 </div>
               </div>
@@ -1170,38 +1362,38 @@ const ReportsArchive = () => {
           <div style={s.section}>
             <div style={s.sectionHeader}>
               <div>
-                <p style={s.sectionTitle}>Statistiques par type de rapport</p>
-                <p style={s.sectionSub}>Nombre de rapports archivés reçus depuis le MES</p>
+                <p style={s.sectionTitle}>{t.statsTitle}</p>
+                <p style={s.sectionSub}>{t.statsSubtitle}</p>
               </div>
             </div>
             {!stats ? (
-              <div style={s.emptyState}><div style={s.emptyIcon}>⏳</div><p>Chargement…</p></div>
+              <div style={s.emptyState}><div style={s.emptyIcon}>⏳</div><p>{t.noStats}</p></div>
             ) : (
               <>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(220px,1fr))", gap: "1rem", marginBottom: "1.5rem" }}>
-                  {REPORT_TYPES.map(t => {
-                    const count = stats[t.value] ?? 0;
+                  {REPORT_TYPES.map(rt => {
+                    const count = stats[rt.value] ?? 0;
                     const total = Object.values(stats).reduce((a, b) => a + b, 0) || 1;
                     const pct   = Math.round((count / total) * 100);
                     return (
-                      <div key={t.value} style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 10, padding: "1.1rem" }}>
+                      <div key={rt.value} style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 10, padding: "1.1rem" }}>
                         <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "0.75rem" }}>
-                          <div style={s.kpiIcon(t.lt)}>{t.icon}</div>
+                          <div style={s.kpiIcon(rt.lt)}>{rt.icon}</div>
                           <div>
-                            <p style={s.kpiLabel}>{t.label}</p>
-                            <p style={s.kpiVal(t.color)}>{count}</p>
+                            <p style={s.kpiLabel}>{rt.label}</p>
+                            <p style={s.kpiVal(rt.color)}>{count}</p>
                           </div>
                         </div>
                         <div style={{ height: 5, background: C.bg, borderRadius: 3, overflow: "hidden" }}>
-                          <div style={{ height: "100%", width: `${pct}%`, background: t.color, borderRadius: 3 }} />
+                          <div style={{ height: "100%", width: `${pct}%`, background: rt.color, borderRadius: 3 }} />
                         </div>
-                        <p style={{ margin: "4px 0 0", fontSize: "0.72rem", color: C.muted }}>{pct}% du total</p>
+                        <p style={{ margin: "4px 0 0", fontSize: "0.72rem", color: C.muted }}>{pct}% {t.ofTotal}</p>
                       </div>
                     );
                   })}
                 </div>
                 <div style={s.infoBox}>
-                  📊 Total archivé : <strong>{Object.values(stats).reduce((a, b) => a + b, 0)} rapport(s)</strong> reçus depuis le MES.
+                  📊 {t.totalArchived} : <strong>{Object.values(stats).reduce((a, b) => a + b, 0)} {Object.values(stats).reduce((a, b) => a + b, 0) > 1 ? t.rapports : t.rapport}</strong> {t.statsSubtitle.toLowerCase()}.
                 </div>
               </>
             )}
@@ -1219,6 +1411,9 @@ const ReportsArchive = () => {
             setSelected(null);
             setLoadingDetail(false);
           }}
+          C={C}
+          s={s}
+          t={t}
         />
       )}
 

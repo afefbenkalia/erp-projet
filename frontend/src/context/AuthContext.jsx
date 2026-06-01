@@ -1,4 +1,6 @@
 import { createContext, useState } from "react";
+import ThemeProvider from "./ThemeContext";
+import LangProvider from "./LangContext";
 
 export const AuthContext = createContext();
 
@@ -24,7 +26,7 @@ function buildUser(payload) {
   };
 }
 
-export default function AuthProvider({ children }) {
+function AuthProviderInner({ children }) {
   const storedToken = localStorage.getItem("token");
   const [user, setUser] = useState(
     buildUser(storedToken ? decodeJwt(storedToken) : null)
@@ -52,5 +54,16 @@ export default function AuthProvider({ children }) {
     >
       {children}
     </AuthContext.Provider>
+  );
+}
+
+// Root provider — wraps Theme + Lang + Auth so every component has access
+export default function AuthProvider({ children }) {
+  return (
+    <ThemeProvider>
+      <LangProvider>
+        <AuthProviderInner>{children}</AuthProviderInner>
+      </LangProvider>
+    </ThemeProvider>
   );
 }
